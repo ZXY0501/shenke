@@ -143,10 +143,14 @@
             padding: 0 4px;
         }
 
-        /* 复盘卡片特殊样式 */
         .message.review .bubble {
             background: #fffbf0;
             border-left: 3px solid #f0a030;
+        }
+
+        .message.brief .bubble {
+            background: #f0fdf5;
+            border-left: 3px solid #07c160;
         }
 
         .welcome-card {
@@ -303,24 +307,31 @@
     // ==================== 配置 ====================
     const API_BASE = 'https://api-shenke-iukrsqonad.cn-hangzhou.fcapp.run';
 
-    // ==================== 今日对话记录 ====================
+    // ==================== 状态管理 ====================
     let todayConversation = [];
+    let yesterdayConversation = [];
     let reviewGenerated = false;
+    let briefGenerated = false;
 
-    // 从 localStorage 恢复状态
     function loadState() {
         const saved = localStorage.getItem('shenke_state');
+        const todayStr = new Date().toDateString();
+
         if (saved) {
             try {
                 const state = JSON.parse(saved);
-                const today = new Date().toDateString();
-                if (state.date === today) {
+                if (state.date === todayStr) {
+                    // 同一天，恢复状态
                     todayConversation = state.conversation || [];
+                    yesterdayConversation = state.yesterdayConversation || [];
                     reviewGenerated = state.reviewGenerated || false;
+                    briefGenerated = state.briefGenerated || false;
                 } else {
-                    // 新的一天，重置
+                    // 新的一天
+                    yesterdayConversation = state.conversation || [];
                     todayConversation = [];
                     reviewGenerated = false;
+                    briefGenerated = false;
                     saveState();
                 }
             } catch (e) {
@@ -333,14 +344,18 @@
         const state = {
             date: new Date().toDateString(),
             conversation: todayConversation,
+            yesterdayConversation: yesterdayConversation,
             reviewGenerated: reviewGenerated,
+            briefGenerated: briefGenerated,
         };
         localStorage.setItem('shenke_state', JSON.stringify(state));
     }
 
     function resetState() {
         todayConversation = [];
+        yesterdayConversation = [];
         reviewGenerated = false;
+        briefGenerated = false;
         saveState();
     }
 
@@ -439,7 +454,6 @@
         addMessage('user', text);
         inputBox.value = '';
 
-        // 记录对话
         todayConversation.push({ role: 'user', content: text, time: getTimeStr() });
         saveState();
 
@@ -448,7 +462,6 @@
         removeLoadingMessage();
         addMessage('ai', reply);
 
-        // 记录 AI 回复
         todayConversation.push({ role: 'ai', content: reply, time: getTimeStr() });
         saveState();
     }
@@ -461,6 +474,43 @@
         }
     });
 
+    // ==================== 动态早安简报 ====================
+    async function generateMorningBrief() {
+        if (briefGenerated) return;
+
+        briefGenerated = true;
+        saveState();
+
+        let briefContent = '';
+        const hour = new Date().getHours();
+
+        if (yesterdayConversation.length === 0) {
+            // 昨天没有对话，显示默认问候
+            const greeting = hour < 12 ? '早上好' : hour < 18 ? '下午好' : '晚上好';
+            briefContent = `${greeting}！新的一天开始了。输入你关注的股票，深克为你提供专业分析。`;
+        } else {
+            // 有昨天的对话，动态生成简报
+            const yesterdaySummary = yesterdayConversation
+                .map(entry => `[${entry.time}] ${entry.role === 'user' ? '用户' : '深克'}: ${entry.content.substring(0, 200)}`)
+                .join('\n');
+
+            const briefPrompt = `请根据以下昨天的投资对话记录，生成一份简洁的早安简报，包含：
+1. 昨日关注了哪些股票
+2. 主要讨论了什么核心问题
+3. 今天建议关注什么（基于昨天讨论的内容）
+
+对话记录：
+${yesterdaySummary}`;
+
+            const briefSystemPrompt = `你是"深克"，正在生成早安简报。请用简洁、温暖、专业的语气，控制在200字以内。`;
+
+            briefContent = await callDeepSeek(briefPrompt, briefSystemPrompt);
+        }
+
+        const briefHeader = `☀️ <b>早安简报 | 8:45</b>\n\n`;
+        addMessage('ai', briefHeader + briefContent, 'brief');
+    }
+
     // ==================== 每日复盘 ====================
     async function generateDailyReview() {
         if (reviewGenerated) return;
@@ -469,7 +519,6 @@
         reviewGenerated = true;
         saveState();
 
-        // 构建复盘请求
         const conversationSummary = todayConversation
             .map(entry => `[${entry.time}] ${entry.role === 'user' ? '用户' : '深克'}: ${entry.content.substring(0, 200)}`)
             .join('\n');
@@ -486,21 +535,18 @@ ${conversationSummary}`;
 
         const reviewContent = await callDeepSeek(reviewPrompt, reviewSystemPrompt);
         
-        // 显示复盘卡片
         const reviewHeader = `📊 <b>今日复盘 | 15:00</b>\n\n`;
         addMessage('ai', reviewHeader + reviewContent, 'review');
     }
 
     function checkAndGenerateReview() {
         const hour = new Date().getHours();
-        const minute = new Date().getMinutes();
-        // 15:00 之后触发
         if (hour >= 15 && !reviewGenerated && todayConversation.length > 0) {
             generateDailyReview();
         }
     }
 
-    // ==================== 预览早安简报 ====================
+    // ==================== 预览早安简报（手动触发） ====================
     previewBriefBtn.addEventListener('click', () => {
         const existing = document.getElementById('morningBrief');
         if (existing) {
@@ -508,26 +554,13 @@ ${conversationSummary}`;
             previewBriefBtn.textContent = '📋 预览早安简报';
             return;
         }
-        const msgDiv = document.createElement('div');
-        msgDiv.className = 'message ai';
-        msgDiv.id = 'morningBrief';
-        const bubble = document.createElement('div');
-        bubble.className = 'bubble';
-        bubble.innerHTML = `☀️ <b>早安简报 | 8:45</b><br><br>
-📊 <b>隔夜外盘</b><br>
-美股三大指数微涨，纳指+0.3%，科技股温和反弹。<br><br>
-📋 <b>持仓动态</b><br>
-华工科技：昨日发布1.6T光模块客户测试进展公告，关注今日开盘反应。<br>
-东山精密：无重大公告，汽车业务订单稳定。<br><br>
-⚠️ <b>今日关注</b><br>
-华工科技当前价距止盈线仅2%，盘中需关注。`;
-        const time = document.createElement('div');
-        time.className = 'time';
-        time.textContent = '8:45';
-        msgDiv.appendChild(bubble);
-        msgDiv.appendChild(time);
-        chatArea.insertBefore(msgDiv, chatArea.firstChild.nextSibling);
-        chatArea.scrollTop = chatArea.scrollHeight;
+        // 临时取消 briefGenerated 限制，允许手动预览
+        const originalFlag = briefGenerated;
+        briefGenerated = false;
+        generateMorningBrief().then(() => {
+            briefGenerated = originalFlag;
+            saveState();
+        });
         previewBriefBtn.textContent = '📋 隐藏早安简报';
     });
 
@@ -562,10 +595,29 @@ ${conversationSummary}`;
 
     // ==================== 页面初始化 ====================
     loadState();
+
+    // 早上 8:45 之后自动生成早安简报
+    const hour = new Date().getHours();
+    const minute = new Date().getMinutes();
+    if ((hour > 8 || (hour === 8 && minute >= 45)) && !briefGenerated) {
+        generateMorningBrief();
+    }
+
+    // 检查复盘
     checkAndGenerateReview();
 
-    // 每分钟检查一次是否到了复盘时间
-    setInterval(checkAndGenerateReview, 60000);
+    // 每 30 秒检查一次
+    setInterval(() => {
+        const now = new Date();
+        const h = now.getHours();
+        const m = now.getMinutes();
+        // 早安简报：8:45 之后触发
+        if ((h > 8 || (h === 8 && m >= 45)) && !briefGenerated) {
+            generateMorningBrief();
+        }
+        // 复盘：15:00 之后触发
+        checkAndGenerateReview();
+    }, 30000);
 </script>
 </body>
 </html>
