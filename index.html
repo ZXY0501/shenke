@@ -143,6 +143,12 @@
             padding: 0 4px;
         }
 
+        /* 复盘卡片特殊样式 */
+        .message.review .bubble {
+            background: #fffbf0;
+            border-left: 3px solid #f0a030;
+        }
+
         .welcome-card {
             background: #ffffff;
             border-radius: 16px;
@@ -295,8 +301,48 @@
 
 <script>
     // ==================== 配置 ====================
-    // 阿里云函数计算公网地址
     const API_BASE = 'https://api-shenke-iukrsqonad.cn-hangzhou.fcapp.run';
+
+    // ==================== 今日对话记录 ====================
+    let todayConversation = [];
+    let reviewGenerated = false;
+
+    // 从 localStorage 恢复状态
+    function loadState() {
+        const saved = localStorage.getItem('shenke_state');
+        if (saved) {
+            try {
+                const state = JSON.parse(saved);
+                const today = new Date().toDateString();
+                if (state.date === today) {
+                    todayConversation = state.conversation || [];
+                    reviewGenerated = state.reviewGenerated || false;
+                } else {
+                    // 新的一天，重置
+                    todayConversation = [];
+                    reviewGenerated = false;
+                    saveState();
+                }
+            } catch (e) {
+                resetState();
+            }
+        }
+    }
+
+    function saveState() {
+        const state = {
+            date: new Date().toDateString(),
+            conversation: todayConversation,
+            reviewGenerated: reviewGenerated,
+        };
+        localStorage.setItem('shenke_state', JSON.stringify(state));
+    }
+
+    function resetState() {
+        todayConversation = [];
+        reviewGenerated = false;
+        saveState();
+    }
 
     // ==================== 动态问候语 ====================
     function updateGreeting() {
@@ -329,9 +375,10 @@
         return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
     }
 
-    function addMessage(type, text) {
+    function addMessage(type, text, extraClass) {
         const msgDiv = document.createElement('div');
         msgDiv.className = `message ${type}`;
+        if (extraClass) msgDiv.classList.add(extraClass);
         const bubble = document.createElement('div');
         bubble.className = 'bubble';
         text = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
@@ -343,6 +390,7 @@
         msgDiv.appendChild(time);
         chatArea.appendChild(msgDiv);
         chatArea.scrollTop = chatArea.scrollHeight;
+        return msgDiv;
     }
 
     function addLoadingMessage() {
@@ -366,12 +414,15 @@
         if (loading) loading.remove();
     }
 
-    async function callDeepSeek(message) {
+    async function callDeepSeek(message, systemPrompt) {
         try {
             const response = await fetch(API_BASE, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: message }),
+                body: JSON.stringify({ 
+                    message: message,
+                    system_prompt: systemPrompt || ''
+                }),
             });
             const data = await response.json();
             return data.reply || '抱歉，分析过程出现问题，请稍后重试。';
@@ -388,10 +439,18 @@
         addMessage('user', text);
         inputBox.value = '';
 
+        // 记录对话
+        todayConversation.push({ role: 'user', content: text, time: getTimeStr() });
+        saveState();
+
         addLoadingMessage();
         const reply = await callDeepSeek(text);
         removeLoadingMessage();
         addMessage('ai', reply);
+
+        // 记录 AI 回复
+        todayConversation.push({ role: 'ai', content: reply, time: getTimeStr() });
+        saveState();
     }
 
     sendBtn.addEventListener('click', handleSend);
@@ -402,6 +461,46 @@
         }
     });
 
+    // ==================== 每日复盘 ====================
+    async function generateDailyReview() {
+        if (reviewGenerated) return;
+        if (todayConversation.length === 0) return;
+
+        reviewGenerated = true;
+        saveState();
+
+        // 构建复盘请求
+        const conversationSummary = todayConversation
+            .map(entry => `[${entry.time}] ${entry.role === 'user' ? '用户' : '深克'}: ${entry.content.substring(0, 200)}`)
+            .join('\n');
+
+        const reviewPrompt = `请根据以下今天的对话记录，生成一份简洁的今日复盘总结，包含：
+1. 今天关注了哪些股票
+2. 主要讨论了什么问题
+3. 明日需要关注什么
+
+对话记录：
+${conversationSummary}`;
+
+        const reviewSystemPrompt = `你是"深克"，正在做每日复盘总结。请用简洁、温暖、专业的语气，总结今天的投资对话内容。`;
+
+        const reviewContent = await callDeepSeek(reviewPrompt, reviewSystemPrompt);
+        
+        // 显示复盘卡片
+        const reviewHeader = `📊 <b>今日复盘 | 15:00</b>\n\n`;
+        addMessage('ai', reviewHeader + reviewContent, 'review');
+    }
+
+    function checkAndGenerateReview() {
+        const hour = new Date().getHours();
+        const minute = new Date().getMinutes();
+        // 15:00 之后触发
+        if (hour >= 15 && !reviewGenerated && todayConversation.length > 0) {
+            generateDailyReview();
+        }
+    }
+
+    // ==================== 预览早安简报 ====================
     previewBriefBtn.addEventListener('click', () => {
         const existing = document.getElementById('morningBrief');
         if (existing) {
@@ -432,6 +531,7 @@
         previewBriefBtn.textContent = '📋 隐藏早安简报';
     });
 
+    // ==================== 备忘框功能 ====================
     const memoBox = document.getElementById('memoBox');
     memoBox.addEventListener('focus', () => {
         if (memoBox.textContent.trim() === '') memoBox.textContent = '';
@@ -459,6 +559,13 @@
     `;
     document.head.appendChild(style);
     memoBox.textContent = '';
+
+    // ==================== 页面初始化 ====================
+    loadState();
+    checkAndGenerateReview();
+
+    // 每分钟检查一次是否到了复盘时间
+    setInterval(checkAndGenerateReview, 60000);
 </script>
 </body>
 </html>
