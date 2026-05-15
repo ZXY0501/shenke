@@ -143,7 +143,6 @@
             padding: 0 4px;
         }
 
-        /* 欢迎卡片 */
         .welcome-card {
             background: #ffffff;
             border-radius: 16px;
@@ -277,10 +276,9 @@
     </div>
 
     <div class="chat-area" id="chatArea">
-        <!-- 欢迎卡片 -->
         <div class="welcome-card" id="welcomeCard">
-            <div class="emoji">☕️</div>
-            <div class="title">早安，我是深克</div>
+            <div class="emoji" id="greetingEmoji">☕️</div>
+            <div class="title" id="greetingTitle">早安，我是深克</div>
             <div class="memo-box" id="memoBox" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="你的备忘"></div>
             <br>
             <button class="brief-preview-btn" id="previewBriefBtn">📋 预览早安简报</button>
@@ -297,8 +295,28 @@
 
 <script>
     // ==================== 配置 ====================
-    // ！！！这是你的专属 API 地址，已填好 ！！！
-    const API_BASE = 'https://shenke-api.2516603037.workers.dev';
+    // 阿里云函数计算公网地址
+    const API_BASE = 'https://api-shenke-iukrsqonad.cn-hangzhou.fcapp.run';
+
+    // ==================== 动态问候语 ====================
+    function updateGreeting() {
+        const hour = new Date().getHours();
+        const emoji = document.getElementById('greetingEmoji');
+        const title = document.getElementById('greetingTitle');
+        
+        if (hour >= 6 && hour < 12) {
+            emoji.textContent = '☀️';
+            title.textContent = '早安，我是深克';
+        } else if (hour >= 12 && hour < 18) {
+            emoji.textContent = '☀️';
+            title.textContent = '午安，我是深克';
+        } else {
+            emoji.textContent = '🌙';
+            title.textContent = '晚安，我是深克';
+        }
+    }
+
+    updateGreeting();
 
     // ==================== 聊天逻辑 ====================
     const chatArea = document.getElementById('chatArea');
@@ -316,7 +334,6 @@
         msgDiv.className = `message ${type}`;
         const bubble = document.createElement('div');
         bubble.className = 'bubble';
-        // 将 Markdown 的粗体转为 HTML
         text = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
         bubble.innerHTML = text.replace(/\n/g, '<br>');
         const time = document.createElement('div');
@@ -328,7 +345,6 @@
         chatArea.scrollTop = chatArea.scrollHeight;
     }
 
-    // 添加加载中的消息
     function addLoadingMessage() {
         const msgDiv = document.createElement('div');
         msgDiv.className = 'message ai';
@@ -347,22 +363,16 @@
 
     function removeLoadingMessage() {
         const loading = document.getElementById('loadingMessage');
-        if (loading) {
-            loading.remove();
-        }
+        if (loading) loading.remove();
     }
 
-    // 调用 DeepSeek API 获取分析结果
     async function callDeepSeek(message) {
         try {
             const response = await fetch(API_BASE, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: message }),
             });
-
             const data = await response.json();
             return data.reply || '抱歉，分析过程出现问题，请稍后重试。';
         } catch (error) {
@@ -375,17 +385,11 @@
         const text = inputBox.value.trim();
         if (!text) return;
 
-        // 添加用户消息
         addMessage('user', text);
         inputBox.value = '';
 
-        // 显示加载中
         addLoadingMessage();
-
-        // 调用真实 AI
         const reply = await callDeepSeek(text);
-
-        // 移除加载中，显示回复
         removeLoadingMessage();
         addMessage('ai', reply);
     }
@@ -398,7 +402,6 @@
         }
     });
 
-    // 预览早安简报
     previewBriefBtn.addEventListener('click', () => {
         const existing = document.getElementById('morningBrief');
         if (existing) {
@@ -429,12 +432,9 @@
         previewBriefBtn.textContent = '📋 隐藏早安简报';
     });
 
-    // 备忘框功能
     const memoBox = document.getElementById('memoBox');
     memoBox.addEventListener('focus', () => {
-        if (memoBox.textContent.trim() === '') {
-            memoBox.textContent = '';
-        }
+        if (memoBox.textContent.trim() === '') memoBox.textContent = '';
         memoBox.classList.add('has-content');
     });
     memoBox.addEventListener('blur', () => {
