@@ -1,0 +1,561 @@
+html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="深克">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#f5f5f5">
+    <title>深克</title>
+    <style>
+        :root {
+            --bg: #f5f5f5;
+            --user-bubble: #95ec69;
+            --ai-bubble: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+            --border: #e0e0e0;
+            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #e8e8e8;
+            -webkit-text-size-adjust: 100%;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: #e8e8e8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+        }
+
+        .phone-frame {
+            width: 390px;
+            max-width: 100vw;
+            height: 844px;
+            height: 100vh;
+            height: 100dvh;
+            max-height: 100vh;
+            max-height: 100dvh;
+            background: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        @media (max-width: 430px) {
+            .phone-frame {
+                width: 100vw;
+                height: 100vh;
+                height: 100dvh;
+                border-radius: 0;
+                box-shadow: none;
+            }
+        }
+
+        .header {
+            background: #f5f5f5;
+            padding: 16px 20px 12px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: 1px;
+        }
+        .header-subtitle {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .chat-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 16px 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #f5f5f5;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease;
+        }
+        .message.user {
+            align-self: flex-end;
+            align-items: flex-end;
+        }
+        .message.ai {
+            align-self: flex-start;
+            align-items: flex-start;
+        }
+
+        .bubble {
+            padding: 10px 14px;
+            border-radius: 18px;
+            font-size: 15px;
+            line-height: 1.6;
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+        .message.user .bubble {
+            background: var(--user-bubble);
+            color: #000;
+            border-bottom-right-radius: 4px;
+        }
+        .message.ai .bubble {
+            background: var(--ai-bubble);
+            color: var(--text-primary);
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .message .time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+            padding: 0 4px;
+        }
+
+        /* 欢迎卡片 */
+        .welcome-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px 18px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 8px;
+            position: relative;
+        }
+        .welcome-card .emoji {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        .welcome-card .title {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        .memo-box {
+            display: inline-block;
+            padding: 6px 14px;
+            border: 1px dashed var(--border);
+            border-radius: 20px;
+            font-size: 13px;
+            color: #bbb;
+            background: #fafafa;
+            cursor: text;
+            outline: none;
+            min-width: 120px;
+            max-width: 90%;
+            transition: border-color 0.2s;
+            text-align: center;
+            -webkit-user-select: text;
+            user-select: text;
+        }
+        .memo-box:focus {
+            border-color: #07c160;
+            color: var(--text-secondary);
+            background: #fff;
+        }
+        .memo-box.has-content {
+            color: var(--text-primary);
+        }
+
+        .brief-preview-btn {
+            background: #ffffff;
+            border: 1px solid #07c160;
+            color: #07c160;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .brief-preview-btn:active {
+            background: #f0fdf5;
+        }
+
+        .input-area {
+            display: flex;
+            align-items: center;
+            padding: 10px 14px 14px;
+            padding-bottom: calc(14px + var(--safe-area-bottom));
+            gap: 10px;
+            border-top: 1px solid var(--border);
+            background: #f5f5f5;
+            flex-shrink: 0;
+        }
+        .input-box {
+            flex: 1;
+            padding: 10px 16px;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            font-size: 16px;
+            background: #ffffff;
+            outline: none;
+            transition: border-color 0.2s;
+            font-family: inherit;
+            -webkit-appearance: none;
+        }
+        .input-box:focus {
+            border-color: #07c160;
+        }
+        .send-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: none;
+            background: #07c160;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .send-btn:active {
+            background: #06ad56;
+        }
+        .send-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .chat-area::-webkit-scrollbar {
+            width: 4px;
+        }
+        .chat-area::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 2px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="phone-frame">
+    <div class="header">
+        <div class="header-title">深克</div>
+        <div class="header-subtitle">DeepSeek support</div>
+    </div>
+
+    <div class="chat-area" id="chatArea">
+        <div class="welcome-card" id="welcomeCard">
+            <div class="emoji">☕️</div>
+            <div class="title">早安，我是深克</div>
+            <div class="memo-box" id="memoBox" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="你的备忘"></div>
+            <br>
+            <button class="brief-preview-btn" id="previewBriefBtn">📋 预览早安简报</button>
+        </div>
+
+        <div class="message ai" id="morningBrief" style="display:none;">
+            <div class="bubble">
+                ☀️ <b>早安简报 | 8:45</b><br><br>
+                📊 <b>隔夜外盘</b><br>
+                美股三大指数微涨，纳指+0.3%，科技股温和反弹。<br><br>
+                📋 <b>持仓动态</b><br>
+                华工科技：昨日发布1.6T光模块客户测试进展公告，关注今日开盘反应。<br>
+                东山精密：无重大公告，汽车业务订单稳定。<br><br>
+                ⚠️ <b>今日关注</b><br>
+                华工科技当前价距止盈线仅2%，盘中需关注。
+            </div>
+            <div class="time">8:45</div>
+        </div>
+    </div>
+
+    <div class="input-area">
+        <input type="text" class="input-box" id="inputBox" placeholder="输入股票名称或问题..." autocomplete="off">
+        <button class="send-btn" id="sendBtn" title="发送">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+    </div>
+</div>
+
+<script>
+    const stockData = {
+        '华工科技': {
+            name: '华工科技',
+            code: '000988',
+            closeYesterday: 32.50,
+            openToday: 32.80,
+            marketShare: '国内光模块市场约3.2%',
+            marketCap: '约320亿元',
+            analysis: `📌 华工科技（000988）—— 深度分析
+
+---
+<b>一、核心逻辑一句话拆解</b>
+
+当前上涨核心逻辑是<b>事件催化 + 业绩预期</b>。市场交易的是其1.6T光模块产品通过北美大客户测试并进入导入阶段的预期，以及其激光设备业务受益于国产替代的逻辑。但需注意：光模块业务从导入到批量贡献营收，通常需要2-3个季度，当前股价已包含相当的乐观预期。
+
+---
+<b>二、收入体检单</b>
+
+• <b>光模块业务营收占比</b>：约占总收入的18%（2025年报数据），尚未成为主业支柱。
+• <b>毛利率对比</b>：光模块毛利率约32%，高于公司整体毛利率（28%）。但该业务处于产能爬坡期，净利润贡献有限。
+• <b>核心主业</b>：激光加工设备（占比约55%）仍是收入和利润的主要来源，增长稳定但缺乏爆发力。
+• ⚠️ <b>提示</b>：市场给予的高估值主要建立在光模块业务的未来预期上，但该业务当前对总盘子的拉动作用有限。
+
+---
+<b>三、赛道排位表</b>
+
+• <b>光模块赛道龙头</b>：中际旭创（全球市占率约15%，市值约1200亿）
+• <b>华工科技位置</b>：处于第二梯队。市占率约3.2%，市值约320亿。优势在于激光+光模块的产业链协同，以及华中地区的光电子产业集群。但相比旭创，其光模块客户导入速度和规模化能力仍有差距。
+• <b>竞争壁垒</b>：以成本优势和国产替代逻辑为主，尚未形成技术引领地位。
+
+---
+<b>四、最可能失败的三种情况</b>
+
+1. 🔴 <b>客户导入不及预期</b>：若1.6T光模块未能按期通过北美客户验证或订单量低于预期，当前估值将承压。关注指标：公司季度公告中的"光模块业务进展"措辞变化。
+2. 🔴 <b>商誉与整合风险</b>：公司历史上进行过多次并购，资产负债表上商誉约占总资产9%，需持续关注减值风险。
+3. 🟡 <b>传统主业增速放缓</b>：激光设备业务受宏观周期影响较大，若制造业投资下滑，将拖累整体业绩。`
+        },
+        '东山精密': {
+            name: '东山精密',
+            code: '002384',
+            closeYesterday: 24.10,
+            openToday: 24.25,
+            marketShare: '全球FPC市场约8%',
+            marketCap: '约410亿元',
+            analysis: `📌 东山精密（002384）—— 深度分析
+
+---
+<b>一、核心逻辑一句话拆解</b>
+
+当前核心逻辑是<b>消费电子周期复苏 + 汽车业务高增长</b>的双轮驱动。但必须清醒认识到：东山精密本质上仍是重资产制造企业，其估值受限于制造业15-25倍的合理区间，增长爆发力弱于纯AI算力标的。
+
+---
+<b>二、收入体检单</b>
+
+• <b>汽车业务营收占比</b>：约占总收入的15%，是增速最快的板块（同比+45%）。
+• <b>消费电子FPC业务</b>：占比约60%，仍是绝对主业，深度绑定A客户（苹果），呈现明显的周期属性。
+• <b>毛利率</b>：汽车业务毛利率（约25%）高于传统FPC业务（约20%），但两者均低于AI赛道的光模块公司。
+• ⚠️ <b>关键矛盾</b>：市场喜欢讲"东山精密的AI故事"，但其AI相关收入占比极低。它的真实身份是一个正在努力转型的传统精密制造商。
+
+---
+<b>三、赛道排位表</b>
+
+• <b>精密制造赛道龙头</b>：立讯精密（平台型整合，市值约2500亿），鹏鼎控股（FPC全球第一，市值约600亿）。
+• <b>东山精密位置</b>：FPC领域全球市占率约8%，市值约410亿，位居全球前三。汽车精密件处于第二梯队。优势在于客户结构（苹果、特斯拉）稳定，劣势是缺乏技术独占性。
+• <b>竞争壁垒</b>：基于规模效应和客户关系，而非技术独占。这使得其议价能力和利润率长期承压。
+
+---
+<b>四、最可能失败的三种情况</b>
+
+1. 🔴 <b>大客户依赖风险</b>：单一客户（苹果）收入占比超过40%。一旦苹果订单波动或供应链策略调整，东山将承受巨大冲击。
+2. 🔴 <b>商誉悬河</b>：资产负债表上商誉占总资产约18%，逼近20%的警戒线。其中，收购索尔思光电切入光模块业务带来的整合风险，是其"AI故事"背后最大的隐患。
+3. 🟡 <b>现金流质量</b>：经营活动现金流净额长期低于净利润，意味着利润中有相当部分是应收账款，盈利质量需持续关注。`
+        }
+    };
+
+    function buildStockMessage(stock) {
+        const priceHeader = `📊 昨日收盘：<b>${stock.closeYesterday}元</b> | 今日开盘：<b>${stock.openToday}元</b>\n\n`;
+        return priceHeader + stock.analysis;
+    }
+
+    function buildComparisonMessage(stockA, stockB) {
+        let bizCompare = '';
+        if ((stockA.name === '华工科技' && stockB.name === '东山精密') ||
+            (stockA.name === '东山精密' && stockB.name === '华工科技')) {
+            bizCompare = `<b>📝 业务本质对比</b>
+
+华工科技和东山精密虽然都常被放在“科技制造”的标签下讨论，但它们的生意本质完全不同。
+
+华工科技的核心看点是<b>光模块</b>，这是一个典型的高端通信器件赛道，靠的是技术迭代和客户认证。它的增长逻辑是“谁先通过北美大客户的1.6T产品测试，谁就能在下一轮AI数据中心建设中分到最大块的蛋糕”。这是一个<b>技术壁垒驱动</b>的故事。
+
+东山精密的核心看点是<b>精密制造</b>，具体来说就是柔性电路板和汽车精密结构件。它的竞争力不来自技术独占，而来自规模效应和长期绑定的客户关系。这是一个<b>成本效率和产能规模驱动</b>的故事。
+
+两者的投资逻辑也截然不同：
+• 华工科技的弹性更大，但确定性更低——一旦产品导入失败，估值会迅速回调。
+• 东山精密的确定性更强，但弹性有限——它的增长受限于大客户的订单节奏和制造业的合理估值区间。
+
+简单来说：如果你想押注AI算力的爆发，华工科技更贴近这个主题；如果你想要一个基本面相对稳健、估值合理的标的，东山精密更适合。两只股票代表了两种完全不同的投资风格，放在一起比，比的不是谁“更好”，而是谁更符合你的风险偏好。`;
+        } else {
+            bizCompare = `<b>📝 业务对比</b>
+
+${stockA.name}与${stockB.name}的详细业务对比暂未预置。接入DeepSeek API后将可动态生成任意两只股票的深度对比分析。`;
+        }
+
+        return `📊 <b>${stockA.name} vs ${stockB.name}</b> 快速对比
+
+---
+<b>股价</b>
+${stockA.name}：昨收 ${stockA.closeYesterday} | 今开 ${stockA.openToday}
+${stockB.name}：昨收 ${stockB.closeYesterday} | 今开 ${stockB.openToday}
+
+<b>市值</b>
+${stockA.name}：${stockA.marketCap}
+${stockB.name}：${stockB.marketCap}
+
+<b>市占率</b>
+${stockA.name}：${stockA.marketShare}
+${stockB.name}：${stockB.marketShare}
+
+---
+${bizCompare}`;
+    }
+
+    const chatArea = document.getElementById('chatArea');
+    const inputBox = document.getElementById('inputBox');
+    const sendBtn = document.getElementById('sendBtn');
+    const previewBriefBtn = document.getElementById('previewBriefBtn');
+
+    function getTimeStr() {
+        const now = new Date();
+        return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    }
+
+    function addMessage(type, text) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${type}`;
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        bubble.innerHTML = text.replace(/\n/g, '<br>');
+        const time = document.createElement('div');
+        time.className = 'time';
+        time.textContent = getTimeStr();
+        msgDiv.appendChild(bubble);
+        msgDiv.appendChild(time);
+        chatArea.appendChild(msgDiv);
+        chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    function findStock(query) {
+        query = query.trim();
+        if (stockData[query]) return [stockData[query]];
+        for (const [key, value] of Object.entries(stockData)) {
+            if (query.includes(key) || key.includes(query)) {
+                return [value];
+            }
+        }
+        return [];
+    }
+
+    function findTwoStocks(text) {
+        const matches = [];
+        for (const [key, value] of Object.entries(stockData)) {
+            if (text.includes(key)) {
+                matches.push(value);
+            }
+        }
+        return matches.length >= 2 ? matches.slice(0, 2) : null;
+    }
+
+    function handleSend() {
+        const text = inputBox.value.trim();
+        if (!text) return;
+
+        addMessage('user', text);
+        inputBox.value = '';
+
+        const twoStocks = findTwoStocks(text);
+        if (twoStocks) {
+            setTimeout(() => {
+                addMessage('ai', buildComparisonMessage(twoStocks[0], twoStocks[1]));
+            }, 600);
+            return;
+        }
+
+        const stocks = findStock(text);
+        if (stocks.length > 0) {
+            setTimeout(() => {
+                addMessage('ai', buildStockMessage(stocks[0]));
+            }, 600);
+            return;
+        }
+
+        setTimeout(() => {
+            let reply = `🤔 抱歉，我目前的内置股票库中还没有"${text}"的相关数据。\n\n📋 当前支持分析的股票：\n• 华工科技（000988）\n• 东山精密（002384）\n\n你也可以尝试输入“比较华工科技和东山精密”。`;
+            addMessage('ai', reply);
+        }, 600);
+    }
+
+    sendBtn.addEventListener('click', handleSend);
+    inputBox.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSend();
+        }
+    });
+
+    previewBriefBtn.addEventListener('click', () => {
+        const brief = document.getElementById('morningBrief');
+        if (brief.style.display === 'none' || brief.style.display === '') {
+            brief.style.display = 'flex';
+            brief.scrollIntoView({ behavior: 'smooth' });
+            previewBriefBtn.textContent = '📋 隐藏早安简报';
+        } else {
+            brief.style.display = 'none';
+            previewBriefBtn.textContent = '📋 预览早安简报';
+        }
+    });
+
+    const memoBox = document.getElementById('memoBox');
+    memoBox.addEventListener('focus', () => {
+        if (memoBox.textContent.trim() === '') {
+            memoBox.textContent = '';
+        }
+        memoBox.classList.add('has-content');
+    });
+    memoBox.addEventListener('blur', () => {
+        if (memoBox.textContent.trim() === '') {
+            memoBox.classList.remove('has-content');
+        } else {
+            memoBox.classList.add('has-content');
+        }
+    });
+    memoBox.textContent = '';
+    memoBox.classList.remove('has-content');
+    memoBox.dataset.placeholder = '你的备忘';
+    const style = document.createElement('style');
+    style.textContent = `
+        .memo-box:empty::before {
+            content: attr(data-placeholder);
+            color: #bbb;
+        }
+        .memo-box:focus:empty::before {
+            content: '';
+        }
+    `;
+    document.head.appendChild(style);
+    memoBox.textContent = '';
+</script>
+</body>
+</html>
