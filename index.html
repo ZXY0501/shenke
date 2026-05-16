@@ -19,262 +19,44 @@
             --border: #e0e0e0;
             --safe-area-bottom: env(safe-area-inset-bottom, 0px);
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #e8e8e8;
-            -webkit-text-size-adjust: 100%;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background: #e8e8e8;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            min-height: -webkit-fill-available;
-        }
-
-        .phone-frame {
-            width: 390px;
-            max-width: 100vw;
-            height: 844px;
-            height: 100vh;
-            height: 100dvh;
-            max-height: 100vh;
-            max-height: 100dvh;
-            background: #f5f5f5;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            border-radius: 20px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        @media (max-width: 430px) {
-            .phone-frame {
-                width: 100vw;
-                height: 100vh;
-                height: 100dvh;
-                border-radius: 0;
-                box-shadow: none;
-            }
-        }
-
-        .header {
-            background: #f5f5f5;
-            padding: 16px 20px 12px;
-            text-align: center;
-            border-bottom: 1px solid var(--border);
-            flex-shrink: 0;
-        }
-        .header-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text-primary);
-            letter-spacing: 1px;
-        }
-        .header-subtitle {
-            font-size: 11px;
-            color: var(--text-secondary);
-            margin-top: 2px;
-        }
-
-        .chat-area {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px 16px 8px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            background: #f5f5f5;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .message {
-            display: flex;
-            flex-direction: column;
-            max-width: 80%;
-            animation: fadeIn 0.3s ease;
-        }
-        .message.user {
-            align-self: flex-end;
-            align-items: flex-end;
-        }
-        .message.ai {
-            align-self: flex-start;
-            align-items: flex-start;
-        }
-
-        .bubble {
-            padding: 10px 14px;
-            border-radius: 18px;
-            font-size: 15px;
-            line-height: 1.6;
-            word-break: break-word;
-            white-space: pre-wrap;
-        }
-        .message.user .bubble {
-            background: var(--user-bubble);
-            color: #000;
-            border-bottom-right-radius: 4px;
-        }
-        .message.ai .bubble {
-            background: var(--ai-bubble);
-            color: var(--text-primary);
-            border-bottom-left-radius: 4px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        }
-        .message .time {
-            font-size: 11px;
-            color: #999;
-            margin-top: 4px;
-            padding: 0 4px;
-        }
-
-        .message.review .bubble {
-            background: #fffbf0;
-            border-left: 3px solid #f0a030;
-        }
-
-        .message.brief .bubble {
-            background: #f0fdf5;
-            border-left: 3px solid #07c160;
-        }
-
-        .welcome-card {
-            background: #ffffff;
-            border-radius: 16px;
-            padding: 20px 18px;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            margin-bottom: 8px;
-            position: relative;
-        }
-        .welcome-card .emoji {
-            font-size: 40px;
-            margin-bottom: 10px;
-        }
-        .welcome-card .title {
-            font-size: 17px;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
-        .memo-box {
-            display: inline-block;
-            padding: 6px 14px;
-            border: 1px dashed var(--border);
-            border-radius: 20px;
-            font-size: 13px;
-            color: #bbb;
-            background: #fafafa;
-            cursor: text;
-            outline: none;
-            min-width: 120px;
-            max-width: 90%;
-            transition: border-color 0.2s;
-            text-align: center;
-            -webkit-user-select: text;
-            user-select: text;
-        }
-        .memo-box:focus {
-            border-color: #07c160;
-            color: var(--text-secondary);
-            background: #fff;
-        }
-        .memo-box.has-content {
-            color: var(--text-primary);
-        }
-
-        .brief-preview-btn {
-            background: #ffffff;
-            border: 1px solid #07c160;
-            color: #07c160;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 13px;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: 0.2s;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .brief-preview-btn:active {
-            background: #f0fdf5;
-        }
-
-        .input-area {
-            display: flex;
-            align-items: center;
-            padding: 10px 14px 14px;
-            padding-bottom: calc(14px + var(--safe-area-bottom));
-            gap: 10px;
-            border-top: 1px solid var(--border);
-            background: #f5f5f5;
-            flex-shrink: 0;
-        }
-        .input-box {
-            flex: 1;
-            padding: 10px 16px;
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            font-size: 16px;
-            background: #ffffff;
-            outline: none;
-            transition: border-color 0.2s;
-            font-family: inherit;
-            -webkit-appearance: none;
-        }
-        .input-box:focus {
-            border-color: #07c160;
-        }
-        .send-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            border: none;
-            background: #07c160;
-            color: #fff;
-            font-size: 18px;
-            cursor: pointer;
-            flex-shrink: 0;
-            transition: background 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .send-btn:active {
-            background: #06ad56;
-        }
-        .send-btn svg {
-            width: 20px;
-            height: 20px;
-        }
-
-        .chat-area::-webkit-scrollbar {
-            width: 4px;
-        }
-        .chat-area::-webkit-scrollbar-thumb {
-            background: #ccc;
-            border-radius: 2px;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html,body { width:100%; height:100%; overflow:hidden; background:#e8e8e8; -webkit-text-size-adjust:100%; -webkit-tap-highlight-color:transparent; }
+        body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif; background:#e8e8e8; display:flex; justify-content:center; align-items:center; min-height:100vh; min-height:-webkit-fill-available; }
+        .phone-frame { width:390px; max-width:100vw; height:844px; height:100vh; height:100dvh; max-height:100vh; max-height:100dvh; background:#f5f5f5; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.3); border-radius:20px; overflow:hidden; position:relative; }
+        @media (max-width:430px) { .phone-frame { width:100vw; height:100vh; height:100dvh; border-radius:0; box-shadow:none; } }
+        .header { background:#f5f5f5; padding:16px 20px 12px; text-align:center; border-bottom:1px solid var(--border); flex-shrink:0; }
+        .header-title { font-size:18px; font-weight:600; color:var(--text-primary); letter-spacing:1px; }
+        .header-subtitle { font-size:11px; color:var(--text-secondary); margin-top:2px; }
+        .chat-area { flex:1; overflow-y:auto; padding:16px 16px 8px; display:flex; flex-direction:column; gap:12px; background:#f5f5f5; -webkit-overflow-scrolling:touch; }
+        .message { display:flex; flex-direction:column; max-width:80%; animation:fadeIn 0.3s ease; }
+        .message.user { align-self:flex-end; align-items:flex-end; }
+        .message.ai { align-self:flex-start; align-items:flex-start; }
+        .bubble { padding:10px 14px; border-radius:18px; font-size:15px; line-height:1.6; word-break:break-word; white-space:pre-wrap; }
+        .message.user .bubble { background:var(--user-bubble); color:#000; border-bottom-right-radius:4px; }
+        .message.ai .bubble { background:var(--ai-bubble); color:var(--text-primary); border-bottom-left-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+        .message .time { font-size:11px; color:#999; margin-top:4px; padding:0 4px; }
+        .message.review .bubble { background:#fffbf0; border-left:3px solid #f0a030; }
+        .message.brief .bubble { background:#f0fdf5; border-left:3px solid #07c160; }
+        .welcome-card { background:#ffffff; border-radius:16px; padding:20px 18px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin-bottom:8px; position:relative; }
+        .welcome-card .emoji { font-size:40px; margin-bottom:10px; }
+        .welcome-card .title { font-size:17px; font-weight:600; color:var(--text-primary); margin-bottom:8px; }
+        .memo-box { display:inline-block; padding:6px 14px; border:1px dashed var(--border); border-radius:20px; font-size:13px; color:#bbb; background:#fafafa; cursor:text; outline:none; min-width:120px; max-width:90%; transition:border-color 0.2s; text-align:center; -webkit-user-select:text; user-select:text; }
+        .memo-box:focus { border-color:#07c160; color:var(--text-secondary); background:#fff; }
+        .memo-box.has-content { color:var(--text-primary); }
+        .brief-preview-btn { background:#ffffff; border:1px solid #07c160; color:#07c160; padding:8px 16px; border-radius:20px; font-size:13px; cursor:pointer; margin-top:10px; transition:0.2s; -webkit-tap-highlight-color:transparent; }
+        .brief-preview-btn:active { background:#f0fdf5; }
+        .input-area { display:flex; align-items:center; padding:10px 14px 14px; padding-bottom:calc(14px + var(--safe-area-bottom)); gap:10px; border-top:1px solid var(--border); background:#f5f5f5; flex-shrink:0; }
+        .input-box { flex:1; padding:10px 16px; border:1px solid var(--border); border-radius:24px; font-size:16px; background:#ffffff; outline:none; transition:border-color 0.2s; font-family:inherit; -webkit-appearance:none; }
+        .input-box:focus { border-color:#07c160; }
+        .send-btn,.upload-btn { width:44px; height:44px; border-radius:50%; border:none; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:18px; -webkit-tap-highlight-color:transparent; }
+        .send-btn { background:#07c160; color:#fff; }
+        .send-btn:active { background:#06ad56; }
+        .upload-btn { background:#ffffff; color:#666; border:1px solid var(--border); }
+        .upload-btn:active { background:#f0f0f0; }
+        .send-btn svg,.upload-btn svg { width:20px; height:20px; }
+        .chat-area::-webkit-scrollbar { width:4px; }
+        .chat-area::-webkit-scrollbar-thumb { background:#ccc; border-radius:2px; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(8px);} to{opacity:1;transform:translateY(0);} }
     </style>
 </head>
 <body>
@@ -296,6 +78,10 @@
     </div>
 
     <div class="input-area">
+        <button class="upload-btn" id="uploadBtn" title="上传交割单">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </button>
+        <input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none;">
         <input type="text" class="input-box" id="inputBox" placeholder="输入股票名称或问题..." autocomplete="off">
         <button class="send-btn" id="sendBtn" title="发送">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
@@ -306,6 +92,76 @@
 <script>
     // ==================== 配置 ====================
     const API_BASE = 'https://api-shenke-iukrsqonad.cn-hangzhou.fcapp.run';
+    const DATA_SOURCE_URL = 'https://shenke-tasource-shenke-iyzukrmyuv.cn-hangzhou.fcapp.run';
+
+    // ==================== 完整交易行为标签库（Claude设计） ====================
+    const TAGS_KEY = 'shenke_behavior_tags';
+
+    function getDefaultTags() {
+        return {
+            // 买入行为类
+            chase_buy_tendency: 0,
+            dip_buy_tendency: 0,
+            concentrated_position_tendency: 0,
+            batch_build_habit: 0,
+            opening_impulse_buy: 0,
+            // 卖出行为类
+            stop_loss_execution_rate: 1.0,
+            stop_profit_execution_rate: 1.0,
+            panic_sell_tendency: 0,
+            premature_profit_tendency: 0,
+            undisciplined_operation_rate: 0,
+            tail_sell_tendency: 0,
+            // 持仓管理类
+            concentrated_holding_tendency: 0,
+            frequent_trading_tendency: 0,
+            long_term_holding_tendency: 0,
+            loss_holding_tendency: 0,
+            profit_giveback_tendency: 0,
+            // 情绪行为类
+            market_correlation_sensitivity: 0,
+            consecutive_loss_impulse: 0,
+            post_profit_discipline_relax: 0,
+            // 元数据
+            review_count: 0,
+            last_review_date: ''
+        };
+    }
+
+    function loadBehaviorTags() {
+        const saved = localStorage.getItem(TAGS_KEY);
+        if (saved) { try { const t = JSON.parse(saved); return Object.assign(getDefaultTags(), t); } catch(e) {} }
+        return getDefaultTags();
+    }
+
+    function saveBehaviorTags(tags) { localStorage.setItem(TAGS_KEY, JSON.stringify(tags)); }
+
+    function updateBehaviorTag(tagName, delta) {
+        const tags = loadBehaviorTags();
+        if (typeof tags[tagName] === 'number') {
+            tags[tagName] = Math.max(0, Math.min(1.0, tags[tagName] + delta));
+        }
+        tags.review_count = (tags.review_count || 0) + 1;
+        tags.last_review_date = new Date().toISOString().split('T')[0];
+        saveBehaviorTags(tags);
+    }
+
+    // 生成注入AI上下文的标签摘要
+    function getBehaviorContext() {
+        const tags = loadBehaviorTags();
+        const parts = [];
+        if (tags.chase_buy_tendency >= 0.3) parts.push(`追涨买入倾向(${tags.chase_buy_tendency.toFixed(1)})`);
+        if (tags.panic_sell_tendency >= 0.3) parts.push(`恐慌卖出倾向(${tags.panic_sell_tendency.toFixed(1)})`);
+        if (tags.stop_loss_execution_rate < 0.7) parts.push(`止损执行率偏低(${tags.stop_loss_execution_rate.toFixed(1)})`);
+        if (tags.undisciplined_operation_rate >= 0.3) parts.push(`纪律外操作率偏高(${tags.undisciplined_operation_rate.toFixed(1)})`);
+        if (tags.opening_impulse_buy >= 0.3) parts.push(`开盘冲动买入(${tags.opening_impulse_buy.toFixed(1)})`);
+        if (tags.tail_sell_tendency >= 0.3) parts.push(`尾盘卖出倾向(${tags.tail_sell_tendency.toFixed(1)})`);
+        if (tags.loss_holding_tendency >= 0.3) parts.push(`亏损死扛倾向(${tags.loss_holding_tendency.toFixed(1)})`);
+        if (tags.frequent_trading_tendency >= 0.3) parts.push(`频繁换手倾向(${tags.frequent_trading_tendency.toFixed(1)})`);
+        if (tags.consecutive_loss_impulse >= 0.3) parts.push(`连亏后冲动交易(${tags.consecutive_loss_impulse.toFixed(1)})`);
+        if (parts.length === 0) return '';
+        return '【用户历史行为标签】' + parts.join('、') + '。本次复盘请重点关注这些维度。';
+    }
 
     // ==================== 状态管理 ====================
     let todayConversation = [];
@@ -319,58 +175,21 @@
         if (saved) {
             try {
                 const state = JSON.parse(saved);
-                if (state.date === todayStr) {
-                    todayConversation = state.conversation || [];
-                    yesterdayConversation = state.yesterdayConversation || [];
-                    reviewGenerated = state.reviewGenerated || false;
-                    briefGenerated = state.briefGenerated || false;
-                } else {
-                    yesterdayConversation = state.conversation || [];
-                    todayConversation = [];
-                    reviewGenerated = false;
-                    briefGenerated = false;
-                    saveState();
-                }
-            } catch (e) {
-                resetState();
-            }
+                if (state.date === todayStr) { todayConversation = state.conversation || []; yesterdayConversation = state.yesterdayConversation || []; reviewGenerated = state.reviewGenerated || false; briefGenerated = state.briefGenerated || false; }
+                else { yesterdayConversation = state.conversation || []; todayConversation = []; reviewGenerated = false; briefGenerated = false; saveState(); }
+            } catch(e) { resetState(); }
         }
     }
-
-    function saveState() {
-        const state = {
-            date: new Date().toDateString(),
-            conversation: todayConversation,
-            yesterdayConversation: yesterdayConversation,
-            reviewGenerated: reviewGenerated,
-            briefGenerated: briefGenerated,
-        };
-        localStorage.setItem('shenke_state', JSON.stringify(state));
-    }
-
-    function resetState() {
-        todayConversation = [];
-        yesterdayConversation = [];
-        reviewGenerated = false;
-        briefGenerated = false;
-        saveState();
-    }
+    function saveState() { const state = { date: new Date().toDateString(), conversation: todayConversation, yesterdayConversation, reviewGenerated, briefGenerated }; localStorage.setItem('shenke_state', JSON.stringify(state)); }
+    function resetState() { todayConversation = []; yesterdayConversation = []; reviewGenerated = false; briefGenerated = false; saveState(); }
 
     // ==================== 动态问候语 ====================
     function updateGreeting() {
         const hour = new Date().getHours();
-        const emoji = document.getElementById('greetingEmoji');
-        const title = document.getElementById('greetingTitle');
-        if (hour >= 6 && hour < 12) {
-            emoji.textContent = '☀️';
-            title.textContent = '早安，我是深克';
-        } else if (hour >= 12 && hour < 18) {
-            emoji.textContent = '☀️';
-            title.textContent = '午安，我是深克';
-        } else {
-            emoji.textContent = '🌙';
-            title.textContent = '晚安，我是深克';
-        }
+        const e = document.getElementById('greetingEmoji'), t = document.getElementById('greetingTitle');
+        if (hour >= 6 && hour < 12) { e.textContent = '☀️'; t.textContent = '早安，我是深克'; }
+        else if (hour >= 12 && hour < 18) { e.textContent = '☀️'; t.textContent = '午安，我是深克'; }
+        else { e.textContent = '🌙'; t.textContent = '晚安，我是深克'; }
     }
     updateGreeting();
 
@@ -378,296 +197,168 @@
     const chatArea = document.getElementById('chatArea');
     const inputBox = document.getElementById('inputBox');
     const sendBtn = document.getElementById('sendBtn');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const fileInput = document.getElementById('fileInput');
     const previewBriefBtn = document.getElementById('previewBriefBtn');
 
-    function getTimeStr() {
-        const now = new Date();
-        return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-    }
+    function getTimeStr() { const n = new Date(); return `${n.getHours().toString().padStart(2,'0')}:${n.getMinutes().toString().padStart(2,'0')}`; }
 
-    function addMessage(type, text, extraClass) {
+    function addMessage(type, text, extraClass, imageUrl) {
         const msgDiv = document.createElement('div');
         msgDiv.className = `message ${type}`;
         if (extraClass) msgDiv.classList.add(extraClass);
         const bubble = document.createElement('div');
         bubble.className = 'bubble';
         text = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-        bubble.innerHTML = text.replace(/\n/g, '<br>');
-        const time = document.createElement('div');
-        time.className = 'time';
-        time.textContent = getTimeStr();
-        msgDiv.appendChild(bubble);
-        msgDiv.appendChild(time);
-        chatArea.appendChild(msgDiv);
-        chatArea.scrollTop = chatArea.scrollHeight;
+        bubble.innerHTML = imageUrl ? text.replace(/\n/g, '<br>') + `<br><img src="${imageUrl}" style="max-width:200px;border-radius:10px;margin-top:8px;">` : text.replace(/\n/g, '<br>');
+        const time = document.createElement('div'); time.className = 'time'; time.textContent = getTimeStr();
+        msgDiv.appendChild(bubble); msgDiv.appendChild(time);
+        chatArea.appendChild(msgDiv); chatArea.scrollTop = chatArea.scrollHeight;
         return msgDiv;
     }
 
     function addLoadingMessage() {
-        const msgDiv = document.createElement('div');
-        msgDiv.className = 'message ai';
-        msgDiv.id = 'loadingMessage';
-        const bubble = document.createElement('div');
-        bubble.className = 'bubble';
-        bubble.innerHTML = '正在分析...';
-        const time = document.createElement('div');
-        time.className = 'time';
-        time.textContent = getTimeStr();
-        msgDiv.appendChild(bubble);
-        msgDiv.appendChild(time);
-        chatArea.appendChild(msgDiv);
-        chatArea.scrollTop = chatArea.scrollHeight;
+        const msgDiv = document.createElement('div'); msgDiv.className = 'message ai'; msgDiv.id = 'loadingMessage';
+        const bubble = document.createElement('div'); bubble.className = 'bubble'; bubble.innerHTML = '正在分析...';
+        const time = document.createElement('div'); time.className = 'time'; time.textContent = getTimeStr();
+        msgDiv.appendChild(bubble); msgDiv.appendChild(time); chatArea.appendChild(msgDiv); chatArea.scrollTop = chatArea.scrollHeight;
     }
 
-    function removeLoadingMessage() {
-        const loading = document.getElementById('loadingMessage');
-        if (loading) loading.remove();
-    }
+    function removeLoadingMessage() { const l = document.getElementById('loadingMessage'); if (l) l.remove(); }
 
     async function callDeepSeek(message, systemPrompt) {
         try {
-            const response = await fetch(API_BASE, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: message, system_prompt: systemPrompt || '' }),
-            });
-            const data = await response.json();
-            return data.reply || '抱歉，分析过程出现问题，请稍后重试。';
-        } catch (error) {
-            console.error('API 调用失败:', error);
-            return '网络连接失败，请检查网络后重试。';
-        }
+            const r = await fetch(API_BASE, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({message, system_prompt: systemPrompt || ''}) });
+            const d = await r.json(); return d.reply || '抱歉，分析过程出现问题，请稍后重试。';
+        } catch(e) { console.error(e); return '网络连接失败，请检查网络后重试。'; }
     }
 
-    async function handleSend() {
-        const text = inputBox.value.trim();
-        if (!text) return;
-        addMessage('user', text);
-        inputBox.value = '';
-        todayConversation.push({ role: 'user', content: text, time: getTimeStr() });
-        saveState();
-        addLoadingMessage();
-        const reply = await callDeepSeek(text);
-        removeLoadingMessage();
-        addMessage('ai', reply);
-        todayConversation.push({ role: 'ai', content: reply, time: getTimeStr() });
-        saveState();
-    }
-
-    sendBtn.addEventListener('click', handleSend);
-    inputBox.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); handleSend(); }
-    });
-
-    // ==================== 动态早安简报 ====================
-    async function generateMorningBrief() {
-        if (briefGenerated) return;
-        briefGenerated = true;
-        saveState();
-        let briefContent = '';
-        const hour = new Date().getHours();
-        if (yesterdayConversation.length === 0) {
-            const greeting = hour < 12 ? '早上好' : hour < 18 ? '下午好' : '晚上好';
-            briefContent = `${greeting}！新的一天开始了。输入你关注的股票，深克为你提供专业分析。`;
-        } else {
-            const yesterdaySummary = yesterdayConversation.map(entry => `[${entry.time}] ${entry.role === 'user' ? '用户' : '深克'}: ${entry.content.substring(0, 200)}`).join('\n');
-            const briefPrompt = `请根据以下昨天的投资对话记录，生成一份简洁的早安简报，包含：1. 昨日关注了哪些股票 2. 主要讨论了什么核心问题 3. 今天建议关注什么（基于昨天讨论的内容）\n\n对话记录：\n${yesterdaySummary}`;
-            const briefSystemPrompt = `你是"深克"，正在生成早安简报。请用简洁、温暖、专业的语气，控制在200字以内。`;
-            briefContent = await callDeepSeek(briefPrompt, briefSystemPrompt);
-        }
-        const briefHeader = `☀️ <b>早安简报 | 8:45</b>\n\n`;
-        addMessage('ai', briefHeader + briefContent, 'brief');
-    }
-
-    // ==================== 每日复盘 ====================
-    async function generateDailyReview() {
-        if (reviewGenerated) return;
-        if (todayConversation.length === 0) return;
-        reviewGenerated = true;
-        saveState();
-        const conversationSummary = todayConversation.map(entry => `[${entry.time}] ${entry.role === 'user' ? '用户' : '深克'}: ${entry.content.substring(0, 200)}`).join('\n');
-        const reviewPrompt = `请根据以下今天的对话记录，生成一份简洁的今日复盘总结，包含：1. 今天关注了哪些股票 2. 主要讨论了什么问题 3. 明日需要关注什么\n\n对话记录：\n${conversationSummary}`;
-        const reviewSystemPrompt = `你是"深克"，正在做每日复盘总结。请用简洁、温暖、专业的语气，总结今天的投资对话内容。`;
-        const reviewContent = await callDeepSeek(reviewPrompt, reviewSystemPrompt);
-        const reviewHeader = `📊 <b>今日复盘 | 15:00</b>\n\n`;
-        addMessage('ai', reviewHeader + reviewContent, 'review');
-    }
-
-    function checkAndGenerateReview() {
-        const hour = new Date().getHours();
-        if (hour >= 15 && !reviewGenerated && todayConversation.length > 0) {
-            generateDailyReview();
-        }
-    }
-
-    // ==================== 预览早安简报 ====================
-    previewBriefBtn.addEventListener('click', () => {
-        const existing = document.getElementById('morningBrief');
-        if (existing) {
-            existing.remove();
-            previewBriefBtn.textContent = '📋 预览早安简报';
-            return;
-        }
-        const originalFlag = briefGenerated;
-        briefGenerated = false;
-        generateMorningBrief().then(() => {
-            briefGenerated = originalFlag;
-            saveState();
-        });
-        previewBriefBtn.textContent = '📋 隐藏早安简报';
-    });
-
-    // ==================== 备忘框功能 ====================
-    const memoBox = document.getElementById('memoBox');
-    memoBox.addEventListener('focus', () => {
-        if (memoBox.textContent.trim() === '') memoBox.textContent = '';
-        memoBox.classList.add('has-content');
-    });
-    memoBox.addEventListener('blur', () => {
-        if (memoBox.textContent.trim() === '') { memoBox.classList.remove('has-content'); } else { memoBox.classList.add('has-content'); }
-    });
-    memoBox.textContent = '';
-    memoBox.classList.remove('has-content');
-    memoBox.dataset.placeholder = '你的备忘';
-    const memoStyle = document.createElement('style');
-    memoStyle.textContent = `.memo-box:empty::before { content: attr(data-placeholder); color: #bbb; } .memo-box:focus:empty::before { content: ''; }`;
-    document.head.appendChild(memoStyle);
-    memoBox.textContent = '';
-
-    // ==================== 初始化引导系统 ====================
-    const GUIDE_KEY = 'shenke_onboarded';
-    let onboardingActive = false;
-    let onboardingStep = 0;
-    let tempPositions = [];
-    let currentPositionIndex = 0;
-
-    function checkOnboarding() {
-        const onboarded = localStorage.getItem(GUIDE_KEY);
-        if (!onboarded) {
-            setTimeout(startOnboarding, 1500);
-        }
-    }
-
-    function startOnboarding() {
-        if (onboardingActive) return;
-        onboardingActive = true;
-        onboardingStep = 1;
-        tempPositions = [];
-        const guideMsg = `📋 <b>持仓初始化引导</b>\n\n在开始使用深克之前，我想先了解一下你目前的持仓情况。这样我才能帮你做更精准的复盘和预警。\n\n你目前持有哪些股票？请告诉我<b>股票名称</b>，可以一次说多只，比如“茅台、宁德时代、比亚迪”。`;
-        addMessage('ai', guideMsg);
-    }
-
-    function handleOnboardingInput(text) {
-        if (onboardingStep === 1) {
-            const stockNames = text.split(/[,，、\s]+/).filter(s => s.trim());
-            if (stockNames.length === 0) {
-                addMessage('ai', '请至少输入一只股票的名称，比如“茅台”或“宁德时代”。');
-                return;
-            }
-            tempPositions = stockNames.map(name => ({ name: name.trim(), code: '', cost: null, quantity: null, stopProfit: null, stopLoss: null }));
-            onboardingStep = 2;
-            currentPositionIndex = 0;
-            askCostPrice();
-            return;
-        }
-        if (onboardingStep === 2) {
-            const price = parseFloat(text.replace(/[^0-9.]/g, ''));
-            if (isNaN(price) || price <= 0) { addMessage('ai', '请输入一个有效的数字，比如“32.50”。'); return; }
-            tempPositions[currentPositionIndex].cost = price;
-            onboardingStep = 3;
-            askQuantity();
-            return;
-        }
-        if (onboardingStep === 3) {
-            const quantity = parseInt(text.replace(/[^0-9]/g, ''));
-            if (isNaN(quantity) || quantity <= 0) { addMessage('ai', '请输入一个有效的整数，比如“100”。'); return; }
-            tempPositions[currentPositionIndex].quantity = quantity;
-            tempPositions[currentPositionIndex].stopProfit = Math.round(tempPositions[currentPositionIndex].cost * 1.15 * 100) / 100;
-            tempPositions[currentPositionIndex].stopLoss = Math.round(tempPositions[currentPositionIndex].cost * 0.9 * 100) / 100;
-            currentPositionIndex++;
-            if (currentPositionIndex < tempPositions.length) { onboardingStep = 2; askCostPrice(); } else { onboardingStep = 4; showConfirmSummary(); }
-            return;
-        }
-        if (onboardingStep === 4) {
-            if (text.includes('确认') || text.includes('没问题') || text.includes('可以') || text === 'ok' || text === 'OK') { completeOnboarding(); }
-            else if (text.includes('修改') || text.includes('改') || text.includes('调整')) { addMessage('ai', '你想修改哪只股票的止盈止损线？请告诉我股票名称、止盈百分比和止损百分比，比如“茅台止盈20%止损8%”。'); onboardingStep = 5; }
-            else { addMessage('ai', '请回复“确认”保存当前设置，或回复“修改”调整止盈止损线。'); }
-            return;
-        }
-        if (onboardingStep === 5) {
-            addMessage('ai', '收到，我会根据你的调整更新。目前修改功能需要重新输入，请先回复“确认”完成初始化，之后可以在对话中随时调整。');
-            onboardingStep = 4;
-        }
-    }
-
-    function askCostPrice() {
-        const pos = tempPositions[currentPositionIndex];
-        addMessage('ai', `你持有 <b>${pos.name}</b>，成本价是多少？比如“32.50”。`);
-    }
-
-    function askQuantity() {
-        const pos = tempPositions[currentPositionIndex];
-        addMessage('ai', `你持有 <b>${pos.name}</b> 多少股？比如“100”。`);
-    }
-
-    function showConfirmSummary() {
-        let summary = `📊 <b>持仓确认</b>\n\n以下是根据你输入的信息生成的持仓列表，止盈线默认+15%，止损线默认-10%：\n\n`;
-        tempPositions.forEach(pos => {
-            summary += `📌 <b>${pos.name}</b>\n   成本价：${pos.cost} | 数量：${pos.quantity}股\n   止盈：${pos.stopProfit} (+15%) | 止损：${pos.stopLoss} (-10%)\n\n`;
-        });
-        summary += `回复<b>“确认”</b>保存设置，或回复<b>“修改”</b>调整止盈止损线。`;
-        addMessage('ai', summary);
-    }
-
-    function completeOnboarding() {
-        localStorage.setItem(GUIDE_KEY, 'true');
-        localStorage.setItem('shenke_positions', JSON.stringify(tempPositions));
-        savePositionsToMemory(tempPositions);
-        onboardingActive = false;
-        onboardingStep = 0;
-        tempPositions = [];
-        addMessage('ai', '✅ <b>持仓初始化完成！</b>\n\n我已经记住了你的持仓信息。从明天开始，深克会在每日复盘和预警中自动关联这些股票。\n\n你可以随时输入“查看我的持仓”来确认，或者输入“修改茅台止盈线到20%”来调整。\n\n祝投资顺利！');
-    }
-
-    async function savePositionsToMemory(positions) {
+    async function fetchStockData(stockCode, date) {
         try {
-            await fetch('https://miyu-memory-shenke-wuwiiajgfl.cn-hangzhou.fcapp.run', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ project: { name: 'shenke', status: '用户持仓已初始化，共' + positions.length + '只股票' } })
-            });
-        } catch (e) { console.log('记忆桶存储跳过'); }
+            const r = await fetch(DATA_SOURCE_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({stock_code: stockCode, date}) });
+            return await r.json();
+        } catch(e) { console.error(e); return null; }
     }
 
-    const originalHandleSend = handleSend;
-    handleSend = async function() {
-        if (onboardingActive) {
-            const text = inputBox.value.trim();
-            if (!text) return;
-            addMessage('user', text);
-            inputBox.value = '';
-            handleOnboardingInput(text);
-            return;
+    // 自动判定并更新标签
+    function autoUpdateTagsFromReview(stockData) {
+        if (!stockData || !stockData.time_points) return;
+        const tags = loadBehaviorTags();
+        let updated = false;
+        // 简化判定：根据数据特征自动推断
+        const openPrice = stockData.open;
+        const closePrice = stockData.close;
+        const highPrice = stockData.high;
+        const lowPrice = stockData.low;
+        const changePct = parseFloat(stockData.change_pct || '0');
+        // 如果日内波动大且收盘在低位，可能触发了恐慌卖出
+        if (changePct < -3) { tags.panic_sell_tendency = Math.min(1.0, tags.panic_sell_tendency + 0.05); updated = true; }
+        // 如果日内从低点反弹，可能有抄底行为
+        if (closePrice > openPrice && closePrice - lowPrice > (highPrice - lowPrice) * 0.6) { tags.dip_buy_tendency = Math.min(1.0, tags.dip_buy_tendency + 0.05); updated = true; }
+        if (updated) {
+            tags.review_count = (tags.review_count || 0) + 1;
+            tags.last_review_date = new Date().toISOString().split('T')[0];
+            saveBehaviorTags(tags);
         }
-        return originalHandleSend();
+    }
+
+    async function handleSend(text, imageUrl) {
+        if (!text && !imageUrl) return;
+        const displayText = text || '📷 上传了一张交割单';
+        addMessage('user', displayText, null, imageUrl);
+        inputBox.value = '';
+        todayConversation.push({ role:'user', content:displayText, time:getTimeStr() }); saveState();
+        addLoadingMessage();
+        let reply = '';
+        if (imageUrl) {
+            addMessage('ai', '📋 已收到你的交割单。正在拉取相关股票数据进行分析...');
+            const stockData = await fetchStockData('000988', new Date().toISOString().split('T')[0]);
+            if (stockData && stockData.time_points) {
+                autoUpdateTagsFromReview(stockData);
+                const behaviorCtx = getBehaviorContext();
+                const reviewPrompt = `用户上传了一份交割单。以下是该股票当天的分时数据：${JSON.stringify(stockData.time_points)}。开盘${stockData.open}，收盘${stockData.close}，最高${stockData.high}，最低${stockData.low}。用户说："${text || '请帮我复盘'}”。请分析买卖时机质量。${behaviorCtx}`;
+                const reviewSystemPrompt = '你是"深克"，一个严格的投资复盘教练。基于分时数据和用户历史行为标签，判断买卖时机质量。如果存在追涨、恐慌抛售、纪律外操作等问题，直接指出，不模糊。';
+                reply = await callDeepSeek(reviewPrompt, reviewSystemPrompt);
+            } else {
+                reply = '⚠️ 未能获取该股票的当天走势数据。请稍后重试，或手动输入买卖时间点和价格。';
+            }
+        } else {
+            reply = await callDeepSeek(text);
+        }
+        removeLoadingMessage(); addMessage('ai', reply);
+        todayConversation.push({ role:'ai', content:reply, time:getTimeStr() }); saveState();
+    }
+
+    sendBtn.addEventListener('click', () => handleSend(inputBox.value.trim()));
+    inputBox.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); handleSend(inputBox.value.trim()); } });
+
+    uploadBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', e => {
+        const file = e.target.files[0]; if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => { const imageUrl = ev.target.result; const promptText = inputBox.value.trim() || '请帮我复盘这张交割单'; handleSend(promptText, imageUrl); };
+        reader.readAsDataURL(file); fileInput.value = '';
+    });
+
+    // ==================== 早安简报 & 复盘 ====================
+    async function generateMorningBrief() {
+        if (briefGenerated) return; briefGenerated = true; saveState();
+        let briefContent = ''; const hour = new Date().getHours();
+        if (yesterdayConversation.length === 0) { briefContent = (hour < 12 ? '早上好' : hour < 18 ? '下午好' : '晚上好') + '！新的一天开始了。输入你关注的股票，深克为你提供专业分析。'; }
+        else { const s = yesterdayConversation.map(e => `[${e.time}] ${e.role==='user'?'用户':'深克'}: ${e.content.substring(0,200)}`).join('\n'); briefContent = await callDeepSeek(`根据昨日对话生成早安简报：\n${s}`, '你是"深克"，请用简洁温暖专业的语气生成早安简报，200字以内。'); }
+        addMessage('ai', `☀️ <b>早安简报 | 8:45</b>\n\n${briefContent}`, 'brief');
+    }
+    async function generateDailyReview() {
+        if (reviewGenerated || todayConversation.length === 0) return;
+        reviewGenerated = true; saveState();
+        const s = todayConversation.map(e => `[${e.time}] ${e.role==='user'?'用户':'深克'}: ${e.content.substring(0,200)}`).join('\n');
+        const c = await callDeepSeek(`根据今日对话生成复盘：\n${s}`, '你是"深克"，请用简洁温暖专业的语气做每日复盘，包含关注股票、讨论问题、明日关注。');
+        addMessage('ai', `📊 <b>今日复盘 | 15:00</b>\n\n${c}`, 'review');
+    }
+    function checkAndGenerateReview() { if (new Date().getHours() >= 15 && !reviewGenerated && todayConversation.length > 0) generateDailyReview(); }
+
+    previewBriefBtn.addEventListener('click', () => {
+        const e = document.getElementById('morningBrief');
+        if (e) { e.remove(); previewBriefBtn.textContent = '📋 预览早安简报'; return; }
+        const f = briefGenerated; briefGenerated = false; generateMorningBrief().then(() => { briefGenerated = f; saveState(); }); previewBriefBtn.textContent = '📋 隐藏早安简报';
+    });
+
+    const memoBox = document.getElementById('memoBox');
+    memoBox.addEventListener('focus', () => { if (!memoBox.textContent.trim()) memoBox.textContent = ''; memoBox.classList.add('has-content'); });
+    memoBox.addEventListener('blur', () => { memoBox.textContent.trim() ? memoBox.classList.add('has-content') : memoBox.classList.remove('has-content'); });
+    memoBox.textContent = ''; memoBox.classList.remove('has-content'); memoBox.dataset.placeholder = '你的备忘';
+    document.head.appendChild(Object.assign(document.createElement('style'), {textContent: `.memo-box:empty::before{content:attr(data-placeholder);color:#bbb;}.memo-box:focus:empty::before{content:'';}`}));
+    memoBox.textContent = '';
+
+    // ==================== 初始化引导 ====================
+    const GUIDE_KEY = 'shenke_onboarded';
+    let onboardingActive = false, onboardingStep = 0, tempPositions = [], currentPositionIndex = 0;
+    function checkOnboarding() { if (!localStorage.getItem(GUIDE_KEY)) setTimeout(startOnboarding, 1500); }
+    function startOnboarding() { if (onboardingActive) return; onboardingActive = true; onboardingStep = 1; tempPositions = []; addMessage('ai', '📋 <b>持仓初始化引导</b>\n\n在开始使用深克之前，我想先了解一下你目前的持仓情况。\n\n你目前持有哪些股票？请告诉我<b>股票名称</b>，可以一次说多只，比如“茅台、宁德时代、比亚迪”。'); }
+    function handleOnboardingInput(text) {
+        if (onboardingStep === 1) { const n = text.split(/[,，、\s]+/).filter(s => s.trim()); if (!n.length) { addMessage('ai', '请至少输入一只股票的名称。'); return; } tempPositions = n.map(m => ({ name:m.trim(), code:'', cost:null, quantity:null, stopProfit:null, stopLoss:null })); onboardingStep = 2; currentPositionIndex = 0; askCostPrice(); return; }
+        if (onboardingStep === 2) { const p = parseFloat(text.replace(/[^0-9.]/g,'')); if (isNaN(p)||p<=0) { addMessage('ai','请输入有效的数字。'); return; } tempPositions[currentPositionIndex].cost = p; onboardingStep = 3; askQuantity(); return; }
+        if (onboardingStep === 3) { const q = parseInt(text.replace(/[^0-9]/g,'')); if (isNaN(q)||q<=0) { addMessage('ai','请输入有效的整数。'); return; } tempPositions[currentPositionIndex].quantity = q; tempPositions[currentPositionIndex].stopProfit = Math.round(tempPositions[currentPositionIndex].cost*1.15*100)/100; tempPositions[currentPositionIndex].stopLoss = Math.round(tempPositions[currentPositionIndex].cost*0.9*100)/100; currentPositionIndex++; if (currentPositionIndex < tempPositions.length) { onboardingStep = 2; askCostPrice(); } else { onboardingStep = 4; showConfirmSummary(); } return; }
+        if (onboardingStep === 4) { if (text.includes('确认')||text.includes('没问题')||text.includes('可以')||text==='ok'||text==='OK') { completeOnboarding(); } else if (text.includes('修改')||text.includes('改')||text.includes('调整')) { addMessage('ai','你想修改哪只股票？请告诉我股票名称、止盈百分比和止损百分比。'); onboardingStep = 5; } else { addMessage('ai','请回复“确认”保存设置，或回复“修改”调整止盈止损线。'); } return; }
+        if (onboardingStep === 5) { addMessage('ai','收到。请先回复“确认”完成初始化，之后可随时调整。'); onboardingStep = 4; }
+    }
+    function askCostPrice() { addMessage('ai', `你持有 <b>${tempPositions[currentPositionIndex].name}</b>，成本价是多少？比如“32.50”。`); }
+    function askQuantity() { addMessage('ai', `你持有 <b>${tempPositions[currentPositionIndex].name}</b> 多少股？比如“100”。`); }
+    function showConfirmSummary() { let s = '📊 <b>持仓确认</b>\n\n以下是根据你输入的信息生成的持仓列表，止盈线默认+15%，止损线默认-10%：\n\n'; tempPositions.forEach(p => { s += `📌 <b>${p.name}</b>\n   成本价：${p.cost} | 数量：${p.quantity}股\n   止盈：${p.stopProfit} | 止损：${p.stopLoss}\n\n`; }); s += '回复<b>“确认”</b>保存，或回复<b>“修改”</b>调整。'; addMessage('ai', s); }
+    function completeOnboarding() { localStorage.setItem(GUIDE_KEY,'true'); localStorage.setItem('shenke_positions', JSON.stringify(tempPositions)); onboardingActive = false; onboardingStep = 0; tempPositions = []; addMessage('ai','✅ <b>持仓初始化完成！</b>\n\n深克已记住你的持仓。输入“查看我的持仓”确认，或“修改XX止盈线”调整。'); }
+
+    const origHandleSend = handleSend;
+    handleSend = async function(text, imageUrl) {
+        if (onboardingActive && !imageUrl) { const t = text || inputBox.value.trim(); if (!t) return; addMessage('user', t); inputBox.value = ''; handleOnboardingInput(t); return; }
+        return origHandleSend(text, imageUrl);
     };
 
-    // ==================== 页面初始化 ====================
+    // ==================== 初始化 ====================
     loadState();
-    const initHour = new Date().getHours();
-    const initMinute = new Date().getMinutes();
-    if ((initHour > 8 || (initHour === 8 && initMinute >= 45)) && !briefGenerated) {
-        generateMorningBrief();
-    }
-    checkAndGenerateReview();
-    checkOnboarding();
-    setInterval(() => {
-        const now = new Date();
-        const h = now.getHours();
-        const m = now.getMinutes();
-        if ((h > 8 || (h === 8 && m >= 45)) && !briefGenerated) { generateMorningBrief(); }
-        checkAndGenerateReview();
-    }, 30000);
+    const h0 = new Date().getHours(), m0 = new Date().getMinutes();
+    if ((h0 > 8 || (h0 === 8 && m0 >= 45)) && !briefGenerated) generateMorningBrief();
+    checkAndGenerateReview(); checkOnboarding();
+    setInterval(() => { const n = new Date(); const h = n.getHours(), m = n.getMinutes(); if ((h > 8 || (h === 8 && m >= 45)) && !briefGenerated) generateMorningBrief(); checkAndGenerateReview(); }, 30000);
 </script>
 </body>
 </html>
