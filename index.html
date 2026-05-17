@@ -285,12 +285,54 @@
     });
 
     // ==================== 早安简报 ====================
-    async function generateMorningBrief() {
-        if (briefGenerated) return; briefGenerated = true; saveState();
-        let briefContent = ''; const hour = new Date().getHours();
-        if (yesterdayConversation.length === 0) { briefContent = (hour < 12 ? '早上好' : hour < 18 ? '下午好' : '晚上好') + '！新的一天开始了。输入你关注的股票，深克为你提供专业分析。'; }
-        else { const s = yesterdayConversation.map(e => `[${e.time}] ${e.role==='user'?'用户':'深克'}: ${e.content.substring(0,200)}`).join('\n'); briefContent = await callDeepSeek(`根据昨日对话生成早安简报：\n${s}`, '你是"深克"，请用简洁温暖专业的语气生成早安简报，200字以内。'); }
-        addMessage('ai', `☀️ <b>早安简报 | 8:45</b>\n\n${briefContent}`, 'brief');
+        async function generateMorningBrief() {
+        if (briefGenerated) return;
+        briefGenerated = true;
+        saveState();
+
+        // 获取用户持仓
+        const positions = JSON.parse(localStorage.getItem('shenke_positions') || '[]');
+        
+        // 获取昨日复盘摘要
+        const history = loadReviewHistory();
+        const yesterdaySummary = history.length > 0 ? history[history.length - 1].summary : '';
+
+        let briefContent = '';
+        const hour = new Date().getHours();
+
+        if (positions.length > 0) {
+            try {
+                // 调用晨报生成函数（开启深度思考）
+                const response = await fetch('https://shenke-briefing-shenke-kxentxzcls.cn-hangzhou.fcapp.run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        holdings: positions,
+                        yesterday_summary: yesterdaySummary
+                    })
+                });
+                const data = await response.json();
+                if (data.success && data.briefing) {
+                    briefContent = data.briefing;
+                } else {
+                    briefContent = '⚠️ 晨报生成失败，请稍后重试。';
+                }
+            } catch (e) {
+                console.error('晨报生成失败:', e);
+                briefContent = '⚠️ 晨报服务暂不可用，请检查网络。';
+            }
+        } else {
+            // 没有持仓时使用原来的逻辑
+            if (yesterdayConversation.length === 0) {
+                briefContent = (hour < 12 ? '早上好' : hour < 18 ? '下午好' : '晚上好') + '！新的一天开始了。输入你关注的股票，深克为你提供专业分析。';
+            } else {
+                const s = yesterdayConversation.map(e => `[${e.time}] ${e.role==='user'?'用户':'深克'}: ${e.content.substring(0,200)}`).join('\n');
+                briefContent = await callDeepSeek(`根据昨日对话生成早安简报：\n${s}`, '你是"深克"，请用简洁温暖专业的语气生成早安简报，200字以内。');
+            }
+        }
+
+        const briefHeader = '☀️ <b>早安简报 | 8:45</b>\n\n';
+        addMessage('ai', briefHeader + briefContent, 'brief');
     }
 
     // ==================== 每日复盘 ====================
