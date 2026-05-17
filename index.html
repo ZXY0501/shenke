@@ -248,25 +248,23 @@
 
     async function handleSend(text, imageUrl) {
         if (!text && !imageUrl) return;
-    
-    // 检查是否是持仓查询指令
-    if (text && (text.includes('查看我的持仓') || text.includes('我的持仓') || text.includes('持仓情况'))) {
-        const positions = JSON.parse(localStorage.getItem('shenke_positions') || '[]');
-        if (positions.length === 0) {
-            addMessage('ai', '📋 你还没有设置持仓信息。\n\n你可以告诉我你持有哪些股票，比如“我持有100股茅台，成本价1500”。');
-        } else {
-            let summary = '📊 <b>当前持仓</b>\n\n';
-            positions.forEach(p => {
-                summary += `📌 <b>${p.name}</b>\n   成本价：${p.cost || '未设置'} | 数量：${p.quantity || '未设置'}股\n   止盈：${p.stopProfit || '未设置'} | 止损：${p.stopLoss || '未设置'}\n\n`;
-            });
-            summary += '你可以输入“修改XX止盈线到20%”来调整止盈止损线。';
-            addMessage('ai', summary);
+        
+        // 检查是否是持仓查询指令
+        if (text && (text.includes('查看我的持仓') || text.includes('我的持仓') || text.includes('持仓情况'))) {
+            const positions = JSON.parse(localStorage.getItem('shenke_positions') || '[]');
+            if (positions.length === 0) {
+                addMessage('ai', '📋 你还没有设置持仓信息。\n\n你可以告诉我你持有哪些股票，比如“我持有100股茅台，成本价1500”。');
+            } else {
+                let summary = '📊 <b>当前持仓</b>\n\n';
+                positions.forEach(p => {
+                    summary += `📌 <b>${p.name}</b>\n   成本价：${p.cost || '未设置'} | 数量：${p.quantity || '未设置'}股\n   止盈：${p.stopProfit || '未设置'} | 止损：${p.stopLoss || '未设置'}\n\n`;
+                });
+                summary += '你可以输入“修改XX止盈线到20%”来调整止盈止损线。';
+                addMessage('ai', summary);
+            }
+            return;
         }
-        return;
-    }
-    
-    const displayText = text || '📷 上传了一张交割单';
-    // ... 后续代码保持不变
+        
         const displayText = text || '📷 上传了一张交割单';
         addMessage('user', displayText, null, imageUrl);
         inputBox.value = '';
@@ -304,54 +302,31 @@
     });
 
     // ==================== 早安简报 ====================
-        async function generateMorningBrief() {
-        if (briefGenerated) return;
-        briefGenerated = true;
-        saveState();
+    async function generateMorningBrief() {
+        if (briefGenerated) return; briefGenerated = true; saveState();
 
         // 获取用户持仓
         const positions = JSON.parse(localStorage.getItem('shenke_positions') || '[]');
-        
-        // 获取昨日复盘摘要
         const history = loadReviewHistory();
         const yesterdaySummary = history.length > 0 ? history[history.length - 1].summary : '';
 
-        let briefContent = '';
-        const hour = new Date().getHours();
+        let briefContent = ''; const hour = new Date().getHours();
 
         if (positions.length > 0) {
             try {
-                // 调用晨报生成函数（开启深度思考）
                 const response = await fetch('https://shenke-briefing-shenke-kxentxzcls.cn-hangzhou.fcapp.run', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        holdings: positions,
-                        yesterday_summary: yesterdaySummary
-                    })
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ holdings: positions, yesterday_summary: yesterdaySummary })
                 });
                 const data = await response.json();
-                if (data.success && data.briefing) {
-                    briefContent = data.briefing;
-                } else {
-                    briefContent = '⚠️ 晨报生成失败，请稍后重试。';
-                }
-            } catch (e) {
-                console.error('晨报生成失败:', e);
-                briefContent = '⚠️ 晨报服务暂不可用，请检查网络。';
-            }
+                if (data.success && data.briefing) { briefContent = data.briefing; }
+                else { briefContent = '⚠️ 晨报生成失败，请稍后重试。'; }
+            } catch (e) { console.error(e); briefContent = '⚠️ 晨报服务暂不可用，请检查网络。'; }
         } else {
-            // 没有持仓时使用原来的逻辑
-            if (yesterdayConversation.length === 0) {
-                briefContent = (hour < 12 ? '早上好' : hour < 18 ? '下午好' : '晚上好') + '！新的一天开始了。输入你关注的股票，深克为你提供专业分析。';
-            } else {
-                const s = yesterdayConversation.map(e => `[${e.time}] ${e.role==='user'?'用户':'深克'}: ${e.content.substring(0,200)}`).join('\n');
-                briefContent = await callDeepSeek(`根据昨日对话生成早安简报：\n${s}`, '你是"深克"，请用简洁温暖专业的语气生成早安简报，200字以内。');
-            }
+            if (yesterdayConversation.length === 0) { briefContent = (hour < 12 ? '早上好' : hour < 18 ? '下午好' : '晚上好') + '！新的一天开始了。输入你关注的股票，深克为你提供专业分析。'; }
+            else { const s = yesterdayConversation.map(e => `[${e.time}] ${e.role==='user'?'用户':'深克'}: ${e.content.substring(0,200)}`).join('\n'); briefContent = await callDeepSeek(`根据昨日对话生成早安简报：\n${s}`, '你是"深克"，请用简洁温暖专业的语气生成早安简报，200字以内。'); }
         }
-
-        const briefHeader = '☀️ <b>早安简报 | 8:45</b>\n\n';
-        addMessage('ai', briefHeader + briefContent, 'brief');
+        addMessage('ai', `☀️ <b>早安简报 | 8:45</b>\n\n${briefContent}`, 'brief');
     }
 
     // ==================== 每日复盘 ====================
@@ -361,7 +336,6 @@
         const s = todayConversation.map(e => `[${e.time}] ${e.role==='user'?'用户':'深克'}: ${e.content.substring(0,200)}`).join('\n');
         const c = await callDeepSeek(`根据今日对话生成复盘：\n${s}`, '你是"深克"，请用简洁温暖专业的语气做每日复盘，包含关注股票、讨论问题、明日关注。');
         addMessage('ai', `📊 <b>今日复盘 | 15:00</b>\n\n${c}`, 'review');
-        // 保存日复盘摘要到历史记录（供周复盘和月复盘使用）
         const currentTags = loadBehaviorTags();
         addReviewSummary(c, {
             chase_buy_tendency: currentTags.chase_buy_tendency,
@@ -375,18 +349,14 @@
 
     // ==================== 周复盘 ====================
     async function generateWeeklyReview() {
-        const history = loadReviewHistory();
-        if (history.length === 0) return;
-        const now = new Date();
-        const dayOfWeek = now.getDay();
-        const monday = new Date(now);
-        monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7));
-        monday.setHours(0, 0, 0, 0);
+        const history = loadReviewHistory(); if (history.length === 0) return;
+        const now = new Date(); const dayOfWeek = now.getDay();
+        const monday = new Date(now); monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7)); monday.setHours(0,0,0,0);
         const weekHistory = history.filter(h => new Date(h.date) >= monday);
         if (weekHistory.length === 0) return;
         const weeklyKey = 'shenke_weekly_review_' + monday.toISOString().split('T')[0];
         if (localStorage.getItem(weeklyKey)) return;
-        const weekSummary = weekHistory.map(h => `[${h.date}] ${h.summary.substring(0, 200)}`).join('\n');
+        const weekSummary = weekHistory.map(h => `[${h.date}] ${h.summary.substring(0,200)}`).join('\n');
         const weekTagsSummary = weekHistory.map(h => `${h.date}: 追涨${h.tags.chase_buy_tendency.toFixed(1)} 止损执行${h.tags.stop_loss_execution_rate.toFixed(1)} 恐慌卖出${h.tags.panic_sell_tendency.toFixed(1)}`).join('\n');
         const weeklyPrompt = `请根据以下本周的日复盘记录和交易行为标签变化，生成一份周复盘总结，包含：1. 本周交易行为标签的变化趋势（和上周相比，哪些行为在改善，哪些在恶化）2. 本周出现的主要问题是什么 3. 下周需要重点关注什么\n\n本周日复盘记录：\n${weekSummary}\n\n本周行为标签变化：\n${weekTagsSummary}`;
         const reviewContent = await callDeepSeek(weeklyPrompt, '你是"深克"，正在做周复盘总结。请用简洁、温暖但直接的语言，分析本周交易行为趋势。');
@@ -396,17 +366,15 @@
 
     // ==================== 月复盘 ====================
     async function generateMonthlyReview() {
-        const history = loadReviewHistory();
-        if (history.length < 5) return;
-        const now = new Date();
-        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        const history = loadReviewHistory(); if (history.length < 5) return;
+        const now = new Date(); const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
         const monthHistory = history.filter(h => new Date(h.date) >= monthStart);
         if (monthHistory.length < 5) return;
         const monthlyKey = 'shenke_monthly_review_' + now.getFullYear() + '_' + (now.getMonth() + 1);
         if (localStorage.getItem(monthlyKey)) return;
         const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
         if (now.getDate() < lastDay - 2) return;
-        const monthSummary = monthHistory.map(h => `[${h.date}] ${h.summary.substring(0, 200)}`).join('\n');
+        const monthSummary = monthHistory.map(h => `[${h.date}] ${h.summary.substring(0,200)}`).join('\n');
         const monthTagsSummary = monthHistory.map(h => `${h.date}: 追涨${h.tags.chase_buy_tendency.toFixed(1)} 止损执行${h.tags.stop_loss_execution_rate.toFixed(1)} 恐慌卖出${h.tags.panic_sell_tendency.toFixed(1)} 纪律外操作${h.tags.undisciplined_operation_rate.toFixed(1)}`).join('\n');
         const monthlyPrompt = `请根据以下本月的日复盘记录和交易行为标签变化，生成一份月复盘总结，包含：1. 本月交易纪律执行率的整体变化（止盈止损执行率比上月高了还是低了）2. 本月盈亏和操作质量的相关性分析（赚钱是因为操作好还是运气好）3. 本月最大的进步是什么，最需要改进的是什么 4. 下月的交易纪律目标建议\n\n本月日复盘记录：\n${monthSummary}\n\n本月行为标签变化：\n${monthTagsSummary}`;
         const reviewContent = await callDeepSeek(monthlyPrompt, '你是"深克"，正在做月复盘总结。请用简洁、温暖但直接的语言，分析本月交易行为趋势和纪律执行情况。');
@@ -414,15 +382,8 @@
         localStorage.setItem(monthlyKey, 'true');
     }
 
-    function checkAndGenerateWeeklyReview() {
-        const now = new Date();
-        if (now.getDay() === 5 && now.getHours() >= 15) generateWeeklyReview();
-    }
-
-    function checkAndGenerateMonthlyReview() {
-        const now = new Date();
-        if (now.getHours() >= 15) generateMonthlyReview();
-    }
+    function checkAndGenerateWeeklyReview() { const now = new Date(); if (now.getDay() === 5 && now.getHours() >= 15) generateWeeklyReview(); }
+    function checkAndGenerateMonthlyReview() { const now = new Date(); if (now.getHours() >= 15) generateMonthlyReview(); }
 
     previewBriefBtn.addEventListener('click', () => {
         const e = document.getElementById('morningBrief');
