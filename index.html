@@ -404,6 +404,21 @@
     function checkOnboarding() { if (!localStorage.getItem(GUIDE_KEY)) setTimeout(startOnboarding, 1500); }
     function startOnboarding() { if (onboardingActive) return; onboardingActive = true; onboardingStep = 1; tempPositions = []; addMessage('ai', '📋 <b>持仓初始化引导</b>\n\n在开始使用深克之前，我想先了解一下你目前的持仓情况。\n\n你目前持有哪些股票？请告诉我<b>股票名称</b>，可以一次说多只，比如“茅台、宁德时代、比亚迪”。'); }
     function handleOnboardingInput(text) {
+                // 允许在引导流程中随时查看持仓
+        if (text.includes('查看我的持仓') || text.includes('我的持仓') || text.includes('持仓情况')) {
+            const positions = JSON.parse(localStorage.getItem('shenke_positions') || '[]');
+            if (positions.length === 0) {
+                addMessage('ai', '📋 你还没有设置持仓信息。\n\n你可以告诉我你持有哪些股票，比如“我持有100股茅台，成本价1500”。');
+            } else {
+                let summary = '📊 <b>当前持仓</b>\n\n';
+                positions.forEach(p => {
+                    summary += `📌 <b>${p.name}</b>\n   成本价：${p.cost || '未设置'} | 数量：${p.quantity || '未设置'}股\n   止盈：${p.stopProfit || '未设置'} | 止损：${p.stopLoss || '未设置'}\n\n`;
+                });
+                summary += '你可以输入“修改XX止盈线到20%”来调整止盈止损线。';
+                addMessage('ai', summary);
+            }
+            return; // 结束引导流程中的这次输入处理
+        }
         if (onboardingStep === 1) { const n = text.split(/[,，、\s]+/).filter(s => s.trim()); if (!n.length) { addMessage('ai', '请至少输入一只股票的名称。'); return; } tempPositions = n.map(m => ({ name:m.trim(), code:'', cost:null, quantity:null, stopProfit:null, stopLoss:null })); onboardingStep = 2; currentPositionIndex = 0; askCostPrice(); return; }
         if (onboardingStep === 2) { const p = parseFloat(text.replace(/[^0-9.]/g,'')); if (isNaN(p)||p<=0) { addMessage('ai','请输入有效的数字。'); return; } tempPositions[currentPositionIndex].cost = p; onboardingStep = 3; askQuantity(); return; }
         if (onboardingStep === 3) { const q = parseInt(text.replace(/[^0-9]/g,'')); if (isNaN(q)||q<=0) { addMessage('ai','请输入有效的整数。'); return; } tempPositions[currentPositionIndex].quantity = q; tempPositions[currentPositionIndex].stopProfit = Math.round(tempPositions[currentPositionIndex].cost*1.15*100)/100; tempPositions[currentPositionIndex].stopLoss = Math.round(tempPositions[currentPositionIndex].cost*0.9*100)/100; currentPositionIndex++; if (currentPositionIndex < tempPositions.length) { onboardingStep = 2; askCostPrice(); } else { onboardingStep = 4; showConfirmSummary(); } return; }
