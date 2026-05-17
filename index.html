@@ -99,32 +99,17 @@
 
     function getDefaultTags() {
         return {
-            // 买入行为类
-            chase_buy_tendency: 0,
-            dip_buy_tendency: 0,
-            concentrated_position_tendency: 0,
-            batch_build_habit: 0,
-            opening_impulse_buy: 0,
-            // 卖出行为类
-            stop_loss_execution_rate: 1.0,
-            stop_profit_execution_rate: 1.0,
-            panic_sell_tendency: 0,
-            premature_profit_tendency: 0,
-            undisciplined_operation_rate: 0,
-            tail_sell_tendency: 0,
-            // 持仓管理类
-            concentrated_holding_tendency: 0,
-            frequent_trading_tendency: 0,
-            long_term_holding_tendency: 0,
-            loss_holding_tendency: 0,
+            chase_buy_tendency: 0, dip_buy_tendency: 0, concentrated_position_tendency: 0,
+            batch_build_habit: 0, opening_impulse_buy: 0,
+            stop_loss_execution_rate: 1.0, stop_profit_execution_rate: 1.0,
+            panic_sell_tendency: 0, premature_profit_tendency: 0,
+            undisciplined_operation_rate: 0, tail_sell_tendency: 0,
+            concentrated_holding_tendency: 0, frequent_trading_tendency: 0,
+            long_term_holding_tendency: 0, loss_holding_tendency: 0,
             profit_giveback_tendency: 0,
-            // 情绪行为类
-            market_correlation_sensitivity: 0,
-            consecutive_loss_impulse: 0,
+            market_correlation_sensitivity: 0, consecutive_loss_impulse: 0,
             post_profit_discipline_relax: 0,
-            // 元数据
-            review_count: 0,
-            last_review_date: ''
+            review_count: 0, last_review_date: ''
         };
     }
 
@@ -146,7 +131,6 @@
         saveBehaviorTags(tags);
     }
 
-    // 生成注入AI上下文的标签摘要
     function getBehaviorContext() {
         const tags = loadBehaviorTags();
         const parts = [];
@@ -161,6 +145,20 @@
         if (tags.consecutive_loss_impulse >= 0.3) parts.push(`连亏后冲动交易(${tags.consecutive_loss_impulse.toFixed(1)})`);
         if (parts.length === 0) return '';
         return '【用户历史行为标签】' + parts.join('、') + '。本次复盘请重点关注这些维度。';
+    }
+
+    // ==================== 日复盘摘要历史（供周复盘和月复盘使用） ====================
+    const REVIEW_HISTORY_KEY = 'shenke_review_history';
+    function loadReviewHistory() {
+        try { return JSON.parse(localStorage.getItem(REVIEW_HISTORY_KEY)) || []; } catch(e) { return []; }
+    }
+    function saveReviewHistory(history) {
+        localStorage.setItem(REVIEW_HISTORY_KEY, JSON.stringify(history.slice(-90)));
+    }
+    function addReviewSummary(summary, tags) {
+        const history = loadReviewHistory();
+        history.push({ date: new Date().toISOString().split('T')[0], summary: summary, tags: tags });
+        saveReviewHistory(history);
     }
 
     // ==================== 状态管理 ====================
@@ -183,7 +181,6 @@
     function saveState() { const state = { date: new Date().toDateString(), conversation: todayConversation, yesterdayConversation, reviewGenerated, briefGenerated }; localStorage.setItem('shenke_state', JSON.stringify(state)); }
     function resetState() { todayConversation = []; yesterdayConversation = []; reviewGenerated = false; briefGenerated = false; saveState(); }
 
-    // ==================== 动态问候语 ====================
     function updateGreeting() {
         const hour = new Date().getHours();
         const e = document.getElementById('greetingEmoji'), t = document.getElementById('greetingTitle');
@@ -193,7 +190,6 @@
     }
     updateGreeting();
 
-    // ==================== 聊天逻辑 ====================
     const chatArea = document.getElementById('chatArea');
     const inputBox = document.getElementById('inputBox');
     const sendBtn = document.getElementById('sendBtn');
@@ -240,26 +236,14 @@
         } catch(e) { console.error(e); return null; }
     }
 
-    // 自动判定并更新标签
     function autoUpdateTagsFromReview(stockData) {
         if (!stockData || !stockData.time_points) return;
-        const tags = loadBehaviorTags();
-        let updated = false;
-        // 简化判定：根据数据特征自动推断
-        const openPrice = stockData.open;
-        const closePrice = stockData.close;
-        const highPrice = stockData.high;
-        const lowPrice = stockData.low;
+        const tags = loadBehaviorTags(); let updated = false;
+        const openPrice = stockData.open, closePrice = stockData.close, highPrice = stockData.high, lowPrice = stockData.low;
         const changePct = parseFloat(stockData.change_pct || '0');
-        // 如果日内波动大且收盘在低位，可能触发了恐慌卖出
         if (changePct < -3) { tags.panic_sell_tendency = Math.min(1.0, tags.panic_sell_tendency + 0.05); updated = true; }
-        // 如果日内从低点反弹，可能有抄底行为
         if (closePrice > openPrice && closePrice - lowPrice > (highPrice - lowPrice) * 0.6) { tags.dip_buy_tendency = Math.min(1.0, tags.dip_buy_tendency + 0.05); updated = true; }
-        if (updated) {
-            tags.review_count = (tags.review_count || 0) + 1;
-            tags.last_review_date = new Date().toISOString().split('T')[0];
-            saveBehaviorTags(tags);
-        }
+        if (updated) { tags.review_count = (tags.review_count || 0) + 1; tags.last_review_date = new Date().toISOString().split('T')[0]; saveBehaviorTags(tags); }
     }
 
     async function handleSend(text, imageUrl) {
@@ -300,7 +284,7 @@
         reader.readAsDataURL(file); fileInput.value = '';
     });
 
-    // ==================== 早安简报 & 复盘 ====================
+    // ==================== 早安简报 ====================
     async function generateMorningBrief() {
         if (briefGenerated) return; briefGenerated = true; saveState();
         let briefContent = ''; const hour = new Date().getHours();
@@ -308,14 +292,76 @@
         else { const s = yesterdayConversation.map(e => `[${e.time}] ${e.role==='user'?'用户':'深克'}: ${e.content.substring(0,200)}`).join('\n'); briefContent = await callDeepSeek(`根据昨日对话生成早安简报：\n${s}`, '你是"深克"，请用简洁温暖专业的语气生成早安简报，200字以内。'); }
         addMessage('ai', `☀️ <b>早安简报 | 8:45</b>\n\n${briefContent}`, 'brief');
     }
+
+    // ==================== 每日复盘 ====================
     async function generateDailyReview() {
         if (reviewGenerated || todayConversation.length === 0) return;
         reviewGenerated = true; saveState();
         const s = todayConversation.map(e => `[${e.time}] ${e.role==='user'?'用户':'深克'}: ${e.content.substring(0,200)}`).join('\n');
         const c = await callDeepSeek(`根据今日对话生成复盘：\n${s}`, '你是"深克"，请用简洁温暖专业的语气做每日复盘，包含关注股票、讨论问题、明日关注。');
         addMessage('ai', `📊 <b>今日复盘 | 15:00</b>\n\n${c}`, 'review');
+        // 保存日复盘摘要到历史记录（供周复盘和月复盘使用）
+        const currentTags = loadBehaviorTags();
+        addReviewSummary(c, {
+            chase_buy_tendency: currentTags.chase_buy_tendency,
+            stop_loss_execution_rate: currentTags.stop_loss_execution_rate,
+            panic_sell_tendency: currentTags.panic_sell_tendency,
+            undisciplined_operation_rate: currentTags.undisciplined_operation_rate
+        });
     }
+
     function checkAndGenerateReview() { if (new Date().getHours() >= 15 && !reviewGenerated && todayConversation.length > 0) generateDailyReview(); }
+
+    // ==================== 周复盘 ====================
+    async function generateWeeklyReview() {
+        const history = loadReviewHistory();
+        if (history.length === 0) return;
+        const now = new Date();
+        const dayOfWeek = now.getDay();
+        const monday = new Date(now);
+        monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7));
+        monday.setHours(0, 0, 0, 0);
+        const weekHistory = history.filter(h => new Date(h.date) >= monday);
+        if (weekHistory.length === 0) return;
+        const weeklyKey = 'shenke_weekly_review_' + monday.toISOString().split('T')[0];
+        if (localStorage.getItem(weeklyKey)) return;
+        const weekSummary = weekHistory.map(h => `[${h.date}] ${h.summary.substring(0, 200)}`).join('\n');
+        const weekTagsSummary = weekHistory.map(h => `${h.date}: 追涨${h.tags.chase_buy_tendency.toFixed(1)} 止损执行${h.tags.stop_loss_execution_rate.toFixed(1)} 恐慌卖出${h.tags.panic_sell_tendency.toFixed(1)}`).join('\n');
+        const weeklyPrompt = `请根据以下本周的日复盘记录和交易行为标签变化，生成一份周复盘总结，包含：1. 本周交易行为标签的变化趋势（和上周相比，哪些行为在改善，哪些在恶化）2. 本周出现的主要问题是什么 3. 下周需要重点关注什么\n\n本周日复盘记录：\n${weekSummary}\n\n本周行为标签变化：\n${weekTagsSummary}`;
+        const reviewContent = await callDeepSeek(weeklyPrompt, '你是"深克"，正在做周复盘总结。请用简洁、温暖但直接的语言，分析本周交易行为趋势。');
+        addMessage('ai', `📊 <b>周复盘 | ${monday.toISOString().split('T')[0]} ~ ${now.toISOString().split('T')[0]}</b>\n\n${reviewContent}`, 'review');
+        localStorage.setItem(weeklyKey, 'true');
+    }
+
+    // ==================== 月复盘 ====================
+    async function generateMonthlyReview() {
+        const history = loadReviewHistory();
+        if (history.length < 5) return;
+        const now = new Date();
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        const monthHistory = history.filter(h => new Date(h.date) >= monthStart);
+        if (monthHistory.length < 5) return;
+        const monthlyKey = 'shenke_monthly_review_' + now.getFullYear() + '_' + (now.getMonth() + 1);
+        if (localStorage.getItem(monthlyKey)) return;
+        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        if (now.getDate() < lastDay - 2) return;
+        const monthSummary = monthHistory.map(h => `[${h.date}] ${h.summary.substring(0, 200)}`).join('\n');
+        const monthTagsSummary = monthHistory.map(h => `${h.date}: 追涨${h.tags.chase_buy_tendency.toFixed(1)} 止损执行${h.tags.stop_loss_execution_rate.toFixed(1)} 恐慌卖出${h.tags.panic_sell_tendency.toFixed(1)} 纪律外操作${h.tags.undisciplined_operation_rate.toFixed(1)}`).join('\n');
+        const monthlyPrompt = `请根据以下本月的日复盘记录和交易行为标签变化，生成一份月复盘总结，包含：1. 本月交易纪律执行率的整体变化（止盈止损执行率比上月高了还是低了）2. 本月盈亏和操作质量的相关性分析（赚钱是因为操作好还是运气好）3. 本月最大的进步是什么，最需要改进的是什么 4. 下月的交易纪律目标建议\n\n本月日复盘记录：\n${monthSummary}\n\n本月行为标签变化：\n${monthTagsSummary}`;
+        const reviewContent = await callDeepSeek(monthlyPrompt, '你是"深克"，正在做月复盘总结。请用简洁、温暖但直接的语言，分析本月交易行为趋势和纪律执行情况。');
+        addMessage('ai', `📊 <b>月复盘 | ${now.getFullYear()}年${now.getMonth() + 1}月</b>\n\n${reviewContent}`, 'review');
+        localStorage.setItem(monthlyKey, 'true');
+    }
+
+    function checkAndGenerateWeeklyReview() {
+        const now = new Date();
+        if (now.getDay() === 5 && now.getHours() >= 15) generateWeeklyReview();
+    }
+
+    function checkAndGenerateMonthlyReview() {
+        const now = new Date();
+        if (now.getHours() >= 15) generateMonthlyReview();
+    }
 
     previewBriefBtn.addEventListener('click', () => {
         const e = document.getElementById('morningBrief');
@@ -358,7 +404,14 @@
     const h0 = new Date().getHours(), m0 = new Date().getMinutes();
     if ((h0 > 8 || (h0 === 8 && m0 >= 45)) && !briefGenerated) generateMorningBrief();
     checkAndGenerateReview(); checkOnboarding();
-    setInterval(() => { const n = new Date(); const h = n.getHours(), m = n.getMinutes(); if ((h > 8 || (h === 8 && m >= 45)) && !briefGenerated) generateMorningBrief(); checkAndGenerateReview(); }, 30000);
+    checkAndGenerateWeeklyReview(); checkAndGenerateMonthlyReview();
+    setInterval(() => {
+        const n = new Date(); const h = n.getHours(), m = n.getMinutes();
+        if ((h > 8 || (h === 8 && m >= 45)) && !briefGenerated) generateMorningBrief();
+        checkAndGenerateReview();
+        checkAndGenerateWeeklyReview();
+        checkAndGenerateMonthlyReview();
+    }, 30000);
 </script>
 </body>
 </html>
