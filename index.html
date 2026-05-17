@@ -248,6 +248,25 @@
 
     async function handleSend(text, imageUrl) {
         if (!text && !imageUrl) return;
+    
+    // 检查是否是持仓查询指令
+    if (text && (text.includes('查看我的持仓') || text.includes('我的持仓') || text.includes('持仓情况'))) {
+        const positions = JSON.parse(localStorage.getItem('shenke_positions') || '[]');
+        if (positions.length === 0) {
+            addMessage('ai', '📋 你还没有设置持仓信息。\n\n你可以告诉我你持有哪些股票，比如“我持有100股茅台，成本价1500”。');
+        } else {
+            let summary = '📊 <b>当前持仓</b>\n\n';
+            positions.forEach(p => {
+                summary += `📌 <b>${p.name}</b>\n   成本价：${p.cost || '未设置'} | 数量：${p.quantity || '未设置'}股\n   止盈：${p.stopProfit || '未设置'} | 止损：${p.stopLoss || '未设置'}\n\n`;
+            });
+            summary += '你可以输入“修改XX止盈线到20%”来调整止盈止损线。';
+            addMessage('ai', summary);
+        }
+        return;
+    }
+    
+    const displayText = text || '📷 上传了一张交割单';
+    // ... 后续代码保持不变
         const displayText = text || '📷 上传了一张交割单';
         addMessage('user', displayText, null, imageUrl);
         inputBox.value = '';
